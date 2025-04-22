@@ -3,7 +3,7 @@ import { StyleSheet } from "react-native"
 import LogoContainer from "../components/LogoContainer"
 import { colorTable, fontTable } from "../constants"
 
-function Start() {
+function Start({ navigation }: any) {
     return (
         <View style={styles.container}>
             <LogoContainer />
@@ -13,7 +13,10 @@ function Start() {
             </Text>
 
             <View style={styles.buttonContainer}>
-                <TouchableOpacity style={styles.button}>
+                <TouchableOpacity
+                    style={styles.button}
+                    onPress={() => navigation.navigate("로그인")}
+                >
                     <Text style={styles.buttonText}>어드민</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.button}>
