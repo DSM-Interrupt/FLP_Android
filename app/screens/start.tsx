@@ -19,7 +19,10 @@ function Start({ navigation }: any) {
                 >
                     <Text style={styles.buttonText}>어드민</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.button}>
+                <TouchableOpacity
+                    style={styles.button}
+                    onPress={() => navigation.navigate("로그인")}
+                >
                     <Text style={styles.buttonText}>멤버</Text>
                 </TouchableOpacity>
             </View>
