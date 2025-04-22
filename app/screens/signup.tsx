@@ -3,10 +3,10 @@ import TextInput from "../components/common/TextInput"
 import { useState } from "react"
 import LogoContainer from "../components/LogoContainer"
 import Button from "../components/common/Button"
-import { colorTable } from "../constants"
-import { fontTable } from "../constants"
+import { colorTable, fontTable } from "../constants"
 
-function Login({ navigation }: any) {
+function Signup({ navigation }: any) {
+    const [name, setName] = useState<string>("")
     const [id, setId] = useState<string>("")
     const [password, setPassword] = useState<string>("")
 
@@ -16,6 +16,12 @@ function Login({ navigation }: any) {
                 <LogoContainer />
 
                 <View style={styles.inputContainer}>
+                    <TextInput
+                        label="이름"
+                        placeholder="이름을 입력하세요"
+                        value={name}
+                        onChange={(text) => setName(text)}
+                    />
                     <TextInput
                         label="아이디"
                         placeholder="아이디를 입력하세요"
@@ -32,14 +38,14 @@ function Login({ navigation }: any) {
                 </View>
 
                 <View style={styles.buttonContainer}>
-                    <Button text="로그인" />
+                    <Button text="회원가입" />
                     <Text style={styles.text}>
-                        회원이 아니신가요?{"  "}
+                        이미 회원이신가요?{"  "}
                         <Text
                             style={styles.accent}
-                            onPress={() => navigation.navigate("회원가입")}
+                            onPress={() => navigation.navigate("로그인")}
                         >
-                            회원가입
+                            로그인
                         </Text>
                     </Text>
                 </View>
@@ -48,7 +54,7 @@ function Login({ navigation }: any) {
     )
 }
 
-export default Login
+export default Signup
 
 const styles = StyleSheet.create({
     container: {
