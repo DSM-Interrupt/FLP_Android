@@ -32,7 +32,10 @@ function Login({ navigation }: any) {
                 </View>
 
                 <View style={styles.buttonContainer}>
-                    <Button text="로그인" />
+                    <Button
+                        text="로그인"
+                        onPress={() => navigation.navigate("멤버")}
+                    />
                     <Text style={styles.text}>
                         회원이 아니신가요?{"  "}
                         <Text
