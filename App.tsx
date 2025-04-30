@@ -4,14 +4,15 @@ import { NavigationContainer } from "@react-navigation/native"
 import Login from "./app/screens/login"
 import Signup from "./app/screens/signup"
 import Member from "./app/screens/member"
+import { RootStackParamList } from "./app/types/navigation"
 
 export default function App() {
-    const Stack = createStackNavigator()
+    const Stack = createStackNavigator<RootStackParamList>()
 
     return (
         <NavigationContainer>
             <Stack.Navigator
-                initialRouteName="시작"
+                initialRouteName="start"
                 screenOptions={{
                     headerShown: false,
                     headerStyle: {
@@ -21,10 +22,10 @@ export default function App() {
                     },
                 }}
             >
-                <Stack.Screen name="시작" component={Start} />
-                <Stack.Screen name="로그인" component={Login} />
-                <Stack.Screen name="회원가입" component={Signup} />
-                <Stack.Screen name="멤버" component={Member} />
+                <Stack.Screen name="start" component={Start} />
+                <Stack.Screen name="login" component={Login} />
+                <Stack.Screen name="signup" component={Signup} />
+                <Stack.Screen name="member" component={Member} />
             </Stack.Navigator>
         </NavigationContainer>
     )
