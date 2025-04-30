@@ -7,6 +7,7 @@ function Member() {
     return (
         <BottomSheetModalProvider>
             <Map />
+
             <MyBottomSheet>
                 <Text>Hello World!</Text>
             </MyBottomSheet>
