@@ -1,6 +1,12 @@
-import { BottomSheetModal } from "@gorhom/bottom-sheet"
+import {
+    BottomSheetBackdrop,
+    BottomSheetBackdropProps,
+    BottomSheetModal,
+} from "@gorhom/bottom-sheet"
 import React, { useCallback, useMemo, useRef } from "react"
-import { View, Text, Button, StyleSheet } from "react-native"
+import { View, Text, Button, StyleSheet, TouchableOpacity } from "react-native"
+import Feather from "@expo/vector-icons/Feather"
+import { colorTable } from "../../constants"
 
 interface props {
     children?: React.ReactNode
@@ -9,26 +15,39 @@ interface props {
 function MyBottomSheet({ children }: props) {
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
 
-    const snapPoints = useMemo(() => ["25%", "50%"], [])
+    const snapPoints = useMemo(() => ["25%"], [])
 
     const handlePresentModalPress = useCallback(() => {
         bottomSheetModalRef.current?.present()
     }, [])
 
+    const renderBackdrop = useCallback(
+        (props: BottomSheetBackdropProps) => (
+            <BottomSheetBackdrop
+                {...props}
+                disappearsOnIndex={-1}
+                appearsOnIndex={0}
+            />
+        ),
+        []
+    )
+
     return (
         <>
             <View style={styles.buttonWrapper}>
-                <Button
+                <TouchableOpacity
+                    style={styles.button}
                     onPress={handlePresentModalPress}
-                    title="PRESENT MODAL"
-                    color="black"
-                />
+                >
+                    <Feather name="menu" size={24} color="black" />
+                </TouchableOpacity>
             </View>
 
             <BottomSheetModal
                 ref={bottomSheetModalRef}
-                index={1}
+                index={0}
                 snapPoints={snapPoints}
+                backdropComponent={renderBackdrop}
             >
                 <View style={styles.bottomSheet}>{children}</View>
             </BottomSheetModal>
@@ -42,13 +61,24 @@ const styles = StyleSheet.create({
     buttonWrapper: {
         position: "absolute",
         top: 40,
-        left: 20,
         right: 20,
-        zIndex: 100,
+        zIndex: -1,
+        backgroundColor: "transparent",
     },
     bottomSheet: {
         alignItems: "center",
         justifyContent: "center",
         padding: 20,
+        zIndex: 2,
+    },
+    button: {
+        width: 50,
+        height: 50,
+        borderRadius: 25,
+        backgroundColor: "white",
+        justifyContent: "center",
+        alignItems: "center",
+        borderWidth: 1,
+        borderColor: `${colorTable["gray"]["light"][200]}`,
     },
 })

@@ -30,6 +30,7 @@ export default Map
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        zIndex: -2,
     },
     map: {
         flex: 1,
