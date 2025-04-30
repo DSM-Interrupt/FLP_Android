@@ -5,10 +5,28 @@ import LogoContainer from "../components/LogoContainer"
 import Button from "../components/common/Button"
 import { colorTable } from "../constants"
 import { fontTable } from "../constants"
+import { RouteProp } from "@react-navigation/native"
+import { NativeStackNavigationProp } from "@react-navigation/native-stack"
+import { RootStackParamList } from "../types/navigation"
 
-function Login({ navigation }: any) {
+interface props {
+    navigation: NativeStackNavigationProp<RootStackParamList, "login">
+    route: RouteProp<RootStackParamList, "login">
+}
+
+function Login({ navigation, route }: props) {
+    const { role } = route.params
     const [id, setId] = useState<string>("")
     const [password, setPassword] = useState<string>("")
+
+    const loginHandler = () => {
+        if (role == "admin") {
+            // 어드민 로그인
+        } else {
+            // 멤버 로그인
+        }
+        navigation.navigate(role == "admin" ? "admin" : "member")
+    }
 
     return (
         <>
@@ -32,15 +50,14 @@ function Login({ navigation }: any) {
                 </View>
 
                 <View style={styles.buttonContainer}>
-                    <Button
-                        text="로그인"
-                        onPress={() => navigation.navigate("멤버")}
-                    />
+                    <Button text="로그인" onPress={loginHandler} />
                     <Text style={styles.text}>
                         회원이 아니신가요?{"  "}
                         <Text
                             style={styles.accent}
-                            onPress={() => navigation.navigate("회원가입")}
+                            onPress={() =>
+                                navigation.navigate("signup", { role })
+                            }
                         >
                             회원가입
                         </Text>

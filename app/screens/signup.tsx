@@ -5,10 +5,20 @@ import LogoContainer from "../components/LogoContainer"
 import Button from "../components/common/Button"
 import { colorTable, fontTable } from "../constants"
 
-function Signup({ navigation }: any) {
+function Signup({ navigation, route }: any) {
+    const { role } = route.params
     const [name, setName] = useState<string>("")
     const [id, setId] = useState<string>("")
     const [password, setPassword] = useState<string>("")
+
+    const signupHandler = () => {
+        if (role == "admin") {
+            // 어드민 회원가입
+        } else {
+            // 멤버 회원가입
+        }
+        navigation.navigate("login", { role })
+    }
 
     return (
         <>
@@ -38,7 +48,7 @@ function Signup({ navigation }: any) {
                 </View>
 
                 <View style={styles.buttonContainer}>
-                    <Button text="회원가입" />
+                    <Button text="회원가입" onPress={signupHandler} />
                     <Text style={styles.text}>
                         이미 회원이신가요?{"  "}
                         <Text

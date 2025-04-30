@@ -15,13 +15,17 @@ function Start({ navigation }: any) {
             <View style={styles.buttonContainer}>
                 <TouchableOpacity
                     style={styles.button}
-                    onPress={() => navigation.navigate("로그인")}
+                    onPress={() =>
+                        navigation.navigate("login", { role: "admin" })
+                    }
                 >
                     <Text style={styles.buttonText}>어드민</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={styles.button}
-                    onPress={() => navigation.navigate("로그인")}
+                    onPress={() =>
+                        navigation.navigate("login", { role: "member" })
+                    }
                 >
                     <Text style={styles.buttonText}>멤버</Text>
                 </TouchableOpacity>
