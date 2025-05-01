@@ -5,6 +5,7 @@ import Login from "./app/screens/login"
 import Signup from "./app/screens/signup"
 import Member from "./app/screens/member"
 import { RootStackParamList } from "./app/types/navigation"
+import Admin from "./app/screens/admin"
 
 export default function App() {
     const Stack = createStackNavigator<RootStackParamList>()
@@ -26,6 +27,7 @@ export default function App() {
                 <Stack.Screen name="login" component={Login} />
                 <Stack.Screen name="signup" component={Signup} />
                 <Stack.Screen name="member" component={Member} />
+                <Stack.Screen name="admin" component={Admin} />
             </Stack.Navigator>
         </NavigationContainer>
     )
