@@ -4,7 +4,7 @@ import {
     BottomSheetModal,
 } from "@gorhom/bottom-sheet"
 import React, { useCallback, useMemo, useRef } from "react"
-import { View, Text, Button, StyleSheet, TouchableOpacity } from "react-native"
+import { View, StyleSheet, TouchableOpacity } from "react-native"
 import Feather from "@expo/vector-icons/Feather"
 import { colorTable } from "../../constants"
 
@@ -15,7 +15,7 @@ interface props {
 function MyBottomSheet({ children }: props) {
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
 
-    const snapPoints = useMemo(() => ["20%"], [])
+    const snapPoints = useMemo(() => ["20%", "80%"], [])
 
     const handlePresentModalPress = useCallback(() => {
         bottomSheetModalRef.current?.present()
