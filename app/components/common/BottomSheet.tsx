@@ -6,7 +6,6 @@ import {
 import React, { useCallback, useMemo, useRef } from "react"
 import { View, StyleSheet, TouchableOpacity } from "react-native"
 import Feather from "@expo/vector-icons/Feather"
-import { colorTable } from "../../constants"
 
 interface props {
     children?: React.ReactNode
@@ -78,7 +77,12 @@ const styles = StyleSheet.create({
         backgroundColor: "white",
         justifyContent: "center",
         alignItems: "center",
-        borderWidth: 1,
-        borderColor: `${colorTable["gray"]["light"][200]}`,
+        shadowColor: "black",
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.25,
+        elevation: 5,
     },
 })
