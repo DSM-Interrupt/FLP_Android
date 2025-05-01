@@ -1,65 +1,44 @@
-import React, { useEffect, useRef, useState } from "react"
-import { StyleSheet, View, Text, Animated, Dimensions } from "react-native"
-import { Easing } from "react-native"
+import React from "react"
+import { StyleSheet, View, Text } from "react-native"
+import { colorTable } from "../constants"
 
 interface Props {
-    text?: string
+    level: number
 }
 
-function Notice({ text = "" }: Props) {
-    const translateX = useRef(new Animated.Value(0)).current
-    const [textWidth, setTextWidth] = useState(0)
-    const screenWidth = Dimensions.get("window").width
+function Notice({ level }: Props) {
+    const warning = [
+        ["현재 안전 구역입니다.", "멀리 가지 않도록 주의하세요."],
+        ["현재 주의 구역입니다.", "구역을 넘어가지 않도록 주의하세요."],
+        [
+            "현재 경고 구역입니다.",
+            "위치를 벗어나지 않도록 안전 구역으로 돌아가주세요.",
+        ],
+    ]
 
-    useEffect(() => {
-        if (textWidth === 0) return
-
-        const distance = textWidth * 2 + screenWidth
-        const duration = distance * 12
-
-        const loop = Animated.loop(
-            Animated.timing(translateX, {
-                toValue: -distance,
-                duration,
-                useNativeDriver: true,
-                easing: Easing.linear,
-            })
-        )
-
-        loop.start()
-        return () => loop.stop()
-    }, [textWidth])
+    const levelColors = [
+        `${colorTable["main"]["light"][500]}`,
+        `${colorTable["error"]["dark"]}`,
+        `${colorTable["error"]["light"]}`,
+    ]
+    const color = levelColors[level]
 
     return (
         <View style={styles.container}>
-            <View style={styles.clip}>
-                <Animated.View
-                    style={{
-                        flexDirection: "row",
-                        transform: [{ translateX }],
-                    }}
-                >
-                    {[...Array(3)].map((_, i) => (
-                        <Text
-                            key={i}
-                            allowFontScaling={false}
-                            numberOfLines={1}
-                            ellipsizeMode="clip"
-                            onLayout={
-                                i === 0
-                                    ? (e) =>
-                                          setTextWidth(
-                                              e.nativeEvent.layout.width
-                                          )
-                                    : undefined
-                            }
-                            style={styles.marqueeText}
-                        >
-                            {text.trim() + "   "}
-                        </Text>
-                    ))}
-                </Animated.View>
-            </View>
+            <Text
+                allowFontScaling={false}
+                adjustsFontSizeToFit={false}
+                style={[styles.text, { color: color }]}
+            >
+                {warning[level][0]}
+            </Text>
+            <Text
+                allowFontScaling={false}
+                adjustsFontSizeToFit={false}
+                style={[styles.text, { color: "black" }]}
+            >
+                {warning[level][1]}
+            </Text>
         </View>
     )
 }
@@ -72,29 +51,22 @@ const styles = StyleSheet.create({
         top: 50,
         left: "5%",
         width: "90%",
-        height: 40,
+        height: 50,
         backgroundColor: "white",
-        borderRadius: 20,
-        justifyContent: "center",
-        paddingHorizontal: 10,
-        elevation: 5,
-        zIndex: 10,
-    },
-    clip: {
+        borderRadius: 25,
         overflow: "hidden",
-        width: "100%",
-        height: 40,
+        justifyContent: "center",
+        shadowColor: "black",
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.25,
+        elevation: 5,
     },
-    marqueeText: {
-        fontSize: 13,
-        lineHeight: 22,
-        height: 40,
-        color: "black",
-        fontWeight: 800,
-        paddingRight: 40,
-        includeFontPadding: false,
-        textAlignVertical: "center",
-        flexShrink: 0,
-        flexGrow: 0,
+    text: {
+        fontSize: 14,
+        fontWeight: "bold",
+        textAlign: "center",
     },
 })
