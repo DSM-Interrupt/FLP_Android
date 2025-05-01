@@ -17,7 +17,13 @@ function Admin() {
                             <TouchableOpacity style={styles.button}>
                                 <Ionicons name="locate" style={styles.icon} />
                             </TouchableOpacity>
-                            <Text style={styles.buttonText}>반경 설정</Text>
+                            <Text
+                                allowFontScaling={false}
+                                adjustsFontSizeToFit={false}
+                                style={styles.buttonText}
+                            >
+                                반경
+                            </Text>
                         </View>
 
                         <View style={styles.buttonContainer}>
@@ -27,7 +33,13 @@ function Admin() {
                                     name="people-circle-sharp"
                                 />
                             </TouchableOpacity>
-                            <Text style={styles.buttonText}>인원 확인</Text>
+                            <Text
+                                allowFontScaling={false}
+                                adjustsFontSizeToFit={false}
+                                style={styles.buttonText}
+                            >
+                                인원
+                            </Text>
                         </View>
                     </View>
                 </MyBottomSheet>
@@ -43,13 +55,12 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "center",
-        gap: 50,
+        gap: 150,
     },
     buttonContainer: {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        gap: 5,
         width: 100,
     },
     button: {
@@ -59,12 +70,11 @@ const styles = StyleSheet.create({
         height: 70,
     },
     icon: {
-        fontSize: 70,
+        fontSize: 60,
         color: `${colorTable["main"]["light"][500]}`,
     },
     buttonText: {
-        fontSize: 18,
-        fontWeight: "bold",
+        fontSize: 16,
         textAlign: "center",
     },
 })
