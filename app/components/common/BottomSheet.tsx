@@ -15,7 +15,7 @@ interface props {
 function MyBottomSheet({ children }: props) {
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
 
-    const snapPoints = useMemo(() => ["25%"], [])
+    const snapPoints = useMemo(() => ["20%"], [])
 
     const handlePresentModalPress = useCallback(() => {
         bottomSheetModalRef.current?.present()
