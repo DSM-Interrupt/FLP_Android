@@ -1,25 +1,38 @@
 import React from "react"
 import { StyleSheet, View } from "react-native"
 import MapView, { Marker } from "react-native-maps"
+import Radius from "./Radius"
 
-function Map() {
+interface props {
+    center: {
+        latitude: number
+        longitude: number
+    }
+    radii: {
+        safe: number
+        warning: number
+        danger: number
+    }
+}
+
+function Map({ center, radii }: props) {
     return (
         <View style={styles.container}>
             <MapView
                 style={styles.map}
                 provider="google"
                 initialRegion={{
-                    latitude: 37.5665,
-                    longitude: 126.978,
+                    ...center,
                     latitudeDelta: 0.05,
                     longitudeDelta: 0.05,
                 }}
             >
                 <Marker
-                    coordinate={{ latitude: 37.5665, longitude: 126.978 }}
+                    coordinate={center}
                     title="서울특별시"
                     description="대한민국 수도"
                 />
+                <Radius center={center} radii={radii} />
             </MapView>
         </View>
     )
