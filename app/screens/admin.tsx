@@ -6,10 +6,13 @@ import Ionicons from "@expo/vector-icons/Ionicons"
 import { colorTable } from "../constants"
 
 function Admin() {
+    const center = { latitude: 37.5665, longitude: 126.978 }
+    const radii = { safe: 100, warning: 200, danger: 300 }
+
     return (
         <>
             <BottomSheetModalProvider>
-                <Map />
+                <Map center={center} radii={radii} />
 
                 <MyBottomSheet>
                     <View style={styles.container}>
