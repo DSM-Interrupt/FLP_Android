@@ -7,7 +7,7 @@ function Member() {
 
     return (
         <>
-            <Notice level={0} />
+            <Notice level={3} />
             <Map center={center} radii={radii} />
         </>
     )
