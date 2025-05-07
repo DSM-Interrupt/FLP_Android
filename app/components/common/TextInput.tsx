@@ -1,4 +1,10 @@
-import { StyleSheet, View, Text, TextInput as NativeInput } from "react-native"
+import {
+    StyleSheet,
+    View,
+    Text,
+    TextInput as NativeInput,
+    KeyboardTypeOptions,
+} from "react-native"
 import { colorTable, fontTable } from "../../constants"
 import { View as AnimView } from "../AnimationComponents"
 import { useState } from "react"
@@ -11,6 +17,7 @@ interface props {
     disabled?: boolean
     value?: string
     onChange?: (text: string) => void
+    type?: KeyboardTypeOptions
 }
 
 function TextInput({
@@ -20,6 +27,7 @@ function TextInput({
     disabled,
     value,
     onChange,
+    type = "default",
 }: props) {
     const [show, setShow] = useState<boolean>(false)
 
@@ -37,6 +45,7 @@ function TextInput({
                         editable={!!!disabled}
                         style={styles.input}
                         onChangeText={onChange}
+                        keyboardType={type}
                     />
                     {password && (
                         <View style={styles.icon}>

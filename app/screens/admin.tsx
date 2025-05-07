@@ -4,20 +4,28 @@ import MyBottomSheet from "../components/common/BottomSheet"
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native"
 import Ionicons from "@expo/vector-icons/Ionicons"
 import { colorTable } from "../constants"
+import MyModal from "../components/Modal"
+import React, { useState } from "react"
 
 function Admin() {
     const center = { latitude: 37.5665, longitude: 126.978 }
     const radii = { safe: 100, warning: 200, danger: 300 }
 
+    const [show, setShow] = useState<boolean>(false)
+
     return (
         <>
+            {show && <MyModal show={show} setShow={setShow} />}
             <BottomSheetModalProvider>
                 <Map center={center} radii={radii} />
 
                 <MyBottomSheet>
                     <View style={styles.container}>
                         <View style={styles.buttonContainer}>
-                            <TouchableOpacity style={styles.button}>
+                            <TouchableOpacity
+                                style={styles.button}
+                                onPress={() => setShow(true)}
+                            >
                                 <Ionicons name="locate" style={styles.icon} />
                             </TouchableOpacity>
                             <Text
