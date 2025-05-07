@@ -14,11 +14,13 @@ function Notice({ level }: Props) {
             "현재 경고 구역입니다.",
             "위치를 벗어나지 않도록 안전 구역으로 돌아가주세요.",
         ],
+        ["현재 이탈상태입니다.", "신속히 구역으로 돌아가주세요"],
     ]
 
     const levelColors = [
         `${colorTable["main"]["light"][500]}`,
         `${colorTable["error"]["dark"]}`,
+        `${colorTable["error"]["light"]}`,
         `${colorTable["error"]["light"]}`,
     ]
     const color = levelColors[level]
