@@ -1,4 +1,4 @@
-import React, { SetStateAction } from "react"
+import React, { SetStateAction, useState } from "react"
 import { Modal, StyleSheet, TouchableOpacity, View, Text } from "react-native"
 import TextInput from "./common/TextInput"
 import { colorTable } from "../constants"
@@ -9,6 +9,22 @@ interface props {
 }
 
 function MyModal({ show, setShow }: props) {
+    const [safe, setSafe] = useState<string>("100")
+    const [warning, setWarning] = useState<string>("200")
+    const [danger, setDanger] = useState<string>("300")
+    const [error, setError] = useState<boolean>(false)
+
+    const submitHandler = () => {
+        const s = parseInt(safe)
+        const w = parseInt(warning)
+        const d = parseInt(danger)
+        if (s < w && w < d) {
+            setShow(false)
+        } else {
+            setError(true)
+        }
+    }
+
     return (
         <>
             <View style={styles.container}>
@@ -16,10 +32,46 @@ function MyModal({ show, setShow }: props) {
                     <View style={styles.container}>
                         <View style={styles.modal}>
                             <View style={styles.form}>
-                                <TextInput label="안전구역" type="number-pad" />
-                                <TextInput label="경고구역" type="number-pad" />
-                                <TextInput label="위험영역" type="number-pad" />
+                                <TextInput
+                                    label="안전구역"
+                                    type="number-pad"
+                                    value={safe}
+                                    onChange={(e) => {
+                                        setSafe(e)
+                                    }}
+                                />
+                                <TextInput
+                                    label="경고구역"
+                                    type="number-pad"
+                                    value={warning}
+                                    onChange={(e) => {
+                                        setWarning(e)
+                                    }}
+                                />
+                                <TextInput
+                                    label="위험영역"
+                                    type="number-pad"
+                                    value={danger}
+                                    onChange={(e) => {
+                                        setDanger(e)
+                                    }}
+                                />
                             </View>
+
+                            {error && (
+                                <Text
+                                    allowFontScaling={false}
+                                    adjustsFontSizeToFit={false}
+                                    style={{
+                                        color: `${colorTable["error"]["light"]}`,
+                                        fontSize: 14,
+                                    }}
+                                >
+                                    {
+                                        "구역 크기는 안전 < 경고 < 위험이어야합니다."
+                                    }
+                                </Text>
+                            )}
 
                             <View style={styles.buttonWrapper}>
                                 <TouchableOpacity
@@ -34,9 +86,7 @@ function MyModal({ show, setShow }: props) {
                                     <Text>닫기</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity
-                                    onPress={() => {
-                                        setShow(false)
-                                    }}
+                                    onPress={submitHandler}
                                     style={{
                                         ...styles.button,
                                         backgroundColor: `${colorTable["main"]["light"][400]}`,
