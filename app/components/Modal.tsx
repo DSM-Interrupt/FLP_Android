@@ -16,10 +16,7 @@ function MyModal({ show, setShow }: props) {
                     <View style={styles.container}>
                         <View style={styles.modal}>
                             <View style={styles.form}>
-                                <TextInput
-                                    label="안전구구역"
-                                    type="number-pad"
-                                />
+                                <TextInput label="안전구역" type="number-pad" />
                                 <TextInput label="경고구역" type="number-pad" />
                                 <TextInput label="위험영역" type="number-pad" />
                             </View>
@@ -86,11 +83,11 @@ const styles = StyleSheet.create({
         gap: 10,
     },
     button: {
-        width: 100,
-        height: 30,
+        width: 145,
+        height: 40,
         justifyContent: "center",
         alignItems: "center",
-        borderRadius: 15,
+        borderRadius: 20,
     },
     buttonWrapper: {
         flexDirection: "row",
