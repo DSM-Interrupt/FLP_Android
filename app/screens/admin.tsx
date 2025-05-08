@@ -1,17 +1,21 @@
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet"
 import Map from "../components/Map"
-import MyBottomSheet from "../components/common/BottomSheet"
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native"
 import Ionicons from "@expo/vector-icons/Ionicons"
 import { colorTable } from "../constants"
 import MyModal from "../components/Modal"
-import React, { useState } from "react"
+import React, { useRef, useState } from "react"
+import MyBottomSheet, {
+    MyBottomSheetRef,
+} from "../components/common/BottomSheet"
+import Person from "../components/Person"
 
 function Admin() {
     const center = { latitude: 37.5665, longitude: 126.978 }
     const radii = { safe: 100, warning: 200, danger: 300 }
 
     const [show, setShow] = useState<boolean>(false)
+    const bottomSheetRef = useRef<MyBottomSheetRef>(null)
 
     return (
         <>
@@ -19,7 +23,7 @@ function Admin() {
             <BottomSheetModalProvider>
                 <Map center={center} radii={radii} />
 
-                <MyBottomSheet>
+                <MyBottomSheet ref={bottomSheetRef}>
                     <View style={styles.container}>
                         <View style={styles.buttonContainer}>
                             <TouchableOpacity
@@ -28,30 +32,30 @@ function Admin() {
                             >
                                 <Ionicons name="locate" style={styles.icon} />
                             </TouchableOpacity>
-                            <Text
-                                allowFontScaling={false}
-                                adjustsFontSizeToFit={false}
-                                style={styles.buttonText}
-                            >
-                                반경
-                            </Text>
+                            <Text style={styles.buttonText}>반경</Text>
                         </View>
 
                         <View style={styles.buttonContainer}>
-                            <TouchableOpacity style={styles.button}>
+                            <TouchableOpacity
+                                style={styles.button}
+                                onPress={() =>
+                                    bottomSheetRef.current?.presentToIndex(1)
+                                }
+                            >
                                 <Ionicons
                                     style={styles.icon}
                                     name="people-circle-sharp"
                                 />
                             </TouchableOpacity>
-                            <Text
-                                allowFontScaling={false}
-                                adjustsFontSizeToFit={false}
-                                style={styles.buttonText}
-                            >
-                                인원
-                            </Text>
+                            <Text style={styles.buttonText}>인원</Text>
                         </View>
+                    </View>
+
+                    <View style={styles.peopleContainer}>
+                        <Person name="서지유" danger={1} />
+                        <Person name="서지유" danger={1} />
+                        <Person name="서지유" danger={1} />
+                        <Person name="서지유" danger={1} />
                     </View>
                 </MyBottomSheet>
             </BottomSheetModalProvider>
@@ -87,5 +91,10 @@ const styles = StyleSheet.create({
     buttonText: {
         fontSize: 16,
         textAlign: "center",
+    },
+    peopleContainer: {
+        marginTop: 50,
+        width: "100%",
+        gap: 10,
     },
 })
