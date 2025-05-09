@@ -3,6 +3,14 @@ import { StyleSheet, View } from "react-native"
 import MapView, { Marker } from "react-native-maps"
 import Radius from "./Radius"
 
+interface member {
+    cordinate: {
+        latitude: number
+        longitude: number
+    }
+    name: string
+}
+
 interface props {
     center: {
         latitude: number
@@ -13,9 +21,10 @@ interface props {
         warning: number
         danger: number
     }
+    members?: member[]
 }
 
-function Map({ center, radii }: props) {
+function Map({ center, radii, members }: props) {
     return (
         <View style={styles.container}>
             <MapView
@@ -32,6 +41,17 @@ function Map({ center, radii }: props) {
                     title="서울특별시"
                     description="대한민국 수도"
                 />
+
+                {members &&
+                    members.map((v, i) => (
+                        <Marker
+                            coordinate={v.cordinate}
+                            title={v.name}
+                            pinColor="green"
+                            key={i}
+                        />
+                    ))}
+
                 <Radius center={center} radii={radii} />
             </MapView>
         </View>
