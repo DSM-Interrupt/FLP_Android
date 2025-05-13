@@ -18,8 +18,8 @@ function Person({ name, danger }: props) {
 
     const levelColors = [
         `${colorTable["main"]["light"][500]}`,
+        `${colorTable["main"]["light"][700]}`,
         `${colorTable["error"]["dark"]}`,
-        `${colorTable["error"]["light"]}`,
         `${colorTable["error"]["light"]}`,
     ]
 
