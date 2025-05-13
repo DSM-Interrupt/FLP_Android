@@ -33,6 +33,25 @@ function Admin() {
         }
     }
 
+    const dummy = [
+        {
+            name: "서지유",
+            danger: 1,
+        },
+        {
+            name: "홍길동",
+            danger: 0,
+        },
+        {
+            name: "김철수",
+            danger: 2,
+        },
+        {
+            name: "김영희",
+            danger: 3,
+        },
+    ]
+
     return (
         <>
             {show && (
@@ -133,10 +152,9 @@ function Admin() {
                     </View>
 
                     <View style={styles.peopleContainer}>
-                        <Person name="서지유" danger={1} />
-                        <Person name="서지유" danger={1} />
-                        <Person name="서지유" danger={1} />
-                        <Person name="서지유" danger={1} />
+                        {dummy.map((v, i) => (
+                            <Person name={v.name} danger={v.danger} key={i} />
+                        ))}
                     </View>
                 </MyBottomSheet>
             </BottomSheetModalProvider>
