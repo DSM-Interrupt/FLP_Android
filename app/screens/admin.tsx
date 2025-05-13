@@ -3,7 +3,7 @@ import Map from "../components/Map"
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native"
 import Ionicons from "@expo/vector-icons/Ionicons"
 import { colorTable } from "../constants"
-import MyModal from "../components/Modal"
+import MyModal from "../components/common/Modal"
 import React, { useRef, useState } from "react"
 import MyBottomSheet, {
     MyBottomSheetRef,
