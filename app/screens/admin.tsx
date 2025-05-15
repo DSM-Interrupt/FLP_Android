@@ -16,11 +16,21 @@ function Admin() {
     const radii = { safe: 100, warning: 200, danger: 300 }
 
     const [show, setShow] = useState<boolean>(false)
+    const [name, setName] = useState<boolean>(false)
     const bottomSheetRef = useRef<MyBottomSheetRef>(null)
     const [safe, setSafe] = useState<string>("100")
     const [warning, setWarning] = useState<string>("200")
     const [danger, setDanger] = useState<string>("300")
     const [error, setError] = useState<boolean>(false)
+
+    const [person, setPerson] = useState<string | null>(null)
+    const [newName, setNewName] = useState<string>("")
+
+    const selectHandler = (name: string) => {
+        setPerson(name)
+        setName(true)
+        setNewName("")
+    }
 
     const submitHandler = () => {
         const s = parseInt(safe)
@@ -120,6 +130,49 @@ function Admin() {
                     </View>
                 </MyModal>
             )}
+
+            {name && (
+                <>
+                    <MyModal show={name}>
+                        <View style={{ gap: 20 }}>
+                            <Text style={{ fontSize: 20, fontWeight: "bold" }}>
+                                현재 이름 : {person}
+                            </Text>
+
+                            <TextInput
+                                label="수정할 이름"
+                                value={newName}
+                                onChange={(e) => setNewName(e)}
+                            />
+                        </View>
+
+                        <View
+                            style={{ ...styles.buttonWrapper, marginTop: 10 }}
+                        >
+                            <TouchableOpacity
+                                onPress={() => {
+                                    setName(false)
+                                }}
+                                style={{
+                                    ...styles.button1,
+                                    backgroundColor: "#00000050",
+                                }}
+                            >
+                                <Text>닫기</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={submitHandler}
+                                style={{
+                                    ...styles.button1,
+                                    backgroundColor: `${colorTable["main"]["light"][400]}`,
+                                }}
+                            >
+                                <Text>저장하기</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </MyModal>
+                </>
+            )}
             <BottomSheetModalProvider>
                 <Map center={center} radii={radii} />
 
@@ -153,7 +206,12 @@ function Admin() {
 
                     <View style={styles.peopleContainer}>
                         {dummy.map((v, i) => (
-                            <Person name={v.name} danger={v.danger} key={i} />
+                            <Person
+                                name={v.name}
+                                danger={v.danger}
+                                key={i}
+                                onPress={() => selectHandler(v.name)}
+                            />
                         ))}
                     </View>
                 </MyBottomSheet>

@@ -1,13 +1,14 @@
-import { StyleSheet, View, Text } from "react-native"
+import { StyleSheet, View, Text, TouchableOpacity } from "react-native"
 import { colorTable } from "../constants"
 import Ionicons from "@expo/vector-icons/Ionicons"
 
 interface props {
     name: string
     danger: number
+    onPress?: () => void
 }
 
-function Person({ name, danger }: props) {
+function Person({ name, danger, onPress }: props) {
     const location = !danger
         ? "안전 구역"
         : danger == 1
@@ -25,7 +26,7 @@ function Person({ name, danger }: props) {
 
     return (
         <>
-            <View style={styles.container}>
+            <TouchableOpacity style={styles.container} onPress={onPress}>
                 <View style={styles.profile}>
                     <Ionicons name="person" size={30} color="gray" />
                     <Text style={styles.name}>{name}</Text>
@@ -39,7 +40,7 @@ function Person({ name, danger }: props) {
                 >
                     {location}
                 </Text>
-            </View>
+            </TouchableOpacity>
         </>
     )
 }
