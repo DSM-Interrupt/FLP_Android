@@ -16,7 +16,8 @@ interface props {
     password?: boolean
     disabled?: boolean
     value?: string
-    onChange?: (text: string) => void
+    id?: string
+    onChange?: (text: string, id: string) => void
     type?: KeyboardTypeOptions
 }
 
@@ -26,10 +27,17 @@ function TextInput({
     password,
     disabled,
     value,
+    id,
     onChange,
     type = "default",
 }: props) {
     const [show, setShow] = useState<boolean>(false)
+
+    const handleChange = (text: string) => {
+        if (onChange && id) {
+            onChange(text, id)
+        }
+    }
 
     return (
         <>
@@ -44,7 +52,8 @@ function TextInput({
                         secureTextEntry={!!password && !show}
                         editable={!!!disabled}
                         style={styles.input}
-                        onChangeText={onChange}
+                        id={id}
+                        onChangeText={handleChange}
                         keyboardType={type}
                     />
                     {password && (

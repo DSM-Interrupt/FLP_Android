@@ -16,8 +16,14 @@ interface props {
 
 function Login({ navigation, route }: props) {
     const { role } = route.params
-    const [id, setId] = useState<string>("")
-    const [password, setPassword] = useState<string>("")
+    const [data, setData] = useState({
+        userId: "",
+        password: "",
+    })
+
+    const changeHandler = (text: string, id: string) => {
+        setData({ ...data, [id]: text })
+    }
 
     const loginHandler = () => {
         if (role == "admin") {
@@ -37,15 +43,16 @@ function Login({ navigation, route }: props) {
                     <TextInput
                         label="아이디"
                         placeholder="아이디를 입력하세요"
-                        value={id}
-                        onChange={(text) => setId(text)}
+                        value={data.userId}
+                        id="userId"
+                        onChange={changeHandler}
                     />
                     <TextInput
                         label="비밀번호"
                         placeholder="비밀번호를 입력하세요"
                         password={true}
-                        value={password}
-                        onChange={(text) => setPassword(text)}
+                        value={data.password}
+                        onChange={changeHandler}
                     />
                 </View>
 
