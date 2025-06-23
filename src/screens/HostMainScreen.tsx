@@ -76,7 +76,7 @@ export const HostMainScreen: React.FC = () => {
     const [mapReady, setMapReady] = useState(false)
     const [socketConnected, setSocketConnected] = useState(false)
 
-    // 뮤테이션들 (HTTP API 사용)
+    // 뮤테이션들 (HTTP API 사용) - 즉시 적용을 위한 optimistic update 추가
     const updateMemberNameMutation = useMutation({
         mutationFn: async ({
             beforeName,
@@ -91,12 +91,38 @@ export const HostMainScreen: React.FC = () => {
             })
             return response.data
         },
+        onMutate: async ({ beforeName, afterName }) => {
+            // Optimistic update - 즉시 UI에 반영
+            if (locationData) {
+                const updatedMembers = locationData.members.map((member) =>
+                    member.memberName === beforeName
+                        ? { ...member, memberName: afterName }
+                        : member
+                )
+                setLocationData({
+                    ...locationData,
+                    members: updatedMembers,
+                })
+            }
+        },
         onSuccess: () => {
             setSelectedMember(null)
             setNewMemberName("")
             Alert.alert("성공", "멤버 이름이 변경되었습니다.")
         },
-        onError: (error: any) => {
+        onError: (error: any, { beforeName }) => {
+            // 실패 시 원래 상태로 복구
+            if (locationData) {
+                const revertedMembers = locationData.members.map((member) =>
+                    member.memberName !== beforeName
+                        ? member
+                        : { ...member, memberName: beforeName }
+                )
+                setLocationData({
+                    ...locationData,
+                    members: revertedMembers,
+                })
+            }
             Alert.alert(
                 "오류",
                 error.response?.data?.message || "이름 변경에 실패했습니다."
@@ -113,11 +139,28 @@ export const HostMainScreen: React.FC = () => {
             const response = await api.post("/host/distance", settings)
             return response.data
         },
+        onMutate: async (newSettings) => {
+            // Optimistic update - 즉시 UI에 반영
+            if (locationData) {
+                setLocationData({
+                    ...locationData,
+                    distanceInfo: newSettings,
+                })
+            }
+        },
         onSuccess: () => {
             setShowDistanceSettings(false)
             Alert.alert("성공", "거리 설정이 변경되었습니다.")
         },
         onError: (error: any) => {
+            // 실패 시 원래 상태로 복구
+            if (locationData) {
+                setDistanceSettings(locationData.distanceInfo)
+                setLocationData({
+                    ...locationData,
+                    distanceInfo: locationData.distanceInfo,
+                })
+            }
             Alert.alert(
                 "오류",
                 error.response?.data?.message || "설정 변경에 실패했습니다."
@@ -177,9 +220,6 @@ export const HostMainScreen: React.FC = () => {
                 }
                 timeoutRef.current = null
             }, 5000)
-
-            // 기존 코드를 다음으로 교체:
-            // const socket = await socketService.connectAsHost()
 
             // 기존 소켓이 있으면 연결 해제
             if (socketRef.current) {
@@ -363,6 +403,22 @@ export const HostMainScreen: React.FC = () => {
         updateDistanceSettingsMutation.mutate(distanceSettings)
     }
 
+    // 호스트 위치로 지도 중심 이동 (변경된 부분)
+    const centerMapOnHost = () => {
+        if (locationData && mapRef.current && mapReady) {
+            mapRef.current.animateToRegion(
+                {
+                    latitude: locationData.host.lat,
+                    longitude: locationData.host.lon,
+                    latitudeDelta: 0.01,
+                    longitudeDelta: 0.01,
+                },
+                1000
+            )
+        }
+    }
+
+    // 전체 보기 함수 (기존 centerMapOnAll 함수를 별도로 유지)
     const centerMapOnAll = () => {
         if (locationData && mapRef.current && mapReady) {
             const coordinates = [
@@ -544,6 +600,9 @@ export const HostMainScreen: React.FC = () => {
         },
         refreshButton: {
             backgroundColor: isDark ? grayColors[700] : grayColors[400],
+        },
+        allViewButton: {
+            backgroundColor: isDark ? grayColors[600] : grayColors[500],
         },
         buttonText: {
             color: "white",
@@ -964,8 +1023,18 @@ export const HostMainScreen: React.FC = () => {
                     </TouchableOpacity>
 
                     <TouchableOpacity
-                        style={dynamicStyles.actionButton}
+                        style={[
+                            dynamicStyles.actionButton,
+                            dynamicStyles.allViewButton,
+                        ]}
                         onPress={centerMapOnAll}
+                    >
+                        <Text style={dynamicStyles.buttonText}>🗺️</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                        style={dynamicStyles.actionButton}
+                        onPress={centerMapOnHost}
                     >
                         <Text style={dynamicStyles.buttonText}>📍</Text>
                     </TouchableOpacity>

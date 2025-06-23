@@ -270,12 +270,28 @@ export const MemberMainScreen: React.FC = () => {
         ])
     }
 
+    // 호스트 위치로 지도 중심 이동 (변경된 부분)
+    const centerMapOnHost = () => {
+        if (locationData && mapRef.current && mapReady) {
+            mapRef.current.animateToRegion(
+                {
+                    latitude: locationData.host.lat,
+                    longitude: locationData.host.lon,
+                    latitudeDelta: 0.01,
+                    longitudeDelta: 0.01,
+                },
+                1000
+            )
+        }
+    }
+
+    // 전체 보기 함수 (기존 함수를 별도로 유지)
     const centerMapOnLocations = () => {
         if (locationData && mapRef.current && mapReady) {
             const { host, member } = locationData
             const coordinates = [
                 { latitude: host.lat, longitude: host.lon },
-                { latitude: member.lat, longitude: host.lon },
+                { latitude: member.lat, longitude: member.lon },
             ]
 
             mapRef.current.fitToCoordinates(coordinates, {
@@ -413,6 +429,9 @@ export const MemberMainScreen: React.FC = () => {
         refreshButton: {
             backgroundColor: isDark ? grayColors[700] : grayColors[400],
         },
+        allViewButton: {
+            backgroundColor: isDark ? grayColors[600] : grayColors[500],
+        },
         buttonText: {
             color: "white",
             fontSize: 20,
@@ -534,11 +553,6 @@ export const MemberMainScreen: React.FC = () => {
                 <View style={dynamicStyles.header}>
                     <Text style={dynamicStyles.title}>FLP 멤버</Text>
                     <View style={dynamicStyles.headerButtons}>
-                        <View style={dynamicStyles.systemThemeIndicator}>
-                            <Text style={dynamicStyles.systemThemeText}>
-                                {systemTheme === "dark" ? "다크" : "라이트"}
-                            </Text>
-                        </View>
                         <TouchableOpacity
                             style={dynamicStyles.headerButton}
                             onPress={handleLogout}
@@ -743,7 +757,7 @@ export const MemberMainScreen: React.FC = () => {
 
                     <TouchableOpacity
                         style={dynamicStyles.actionButton}
-                        onPress={centerMapOnLocations}
+                        onPress={centerMapOnHost}
                     >
                         <Text style={dynamicStyles.buttonText}>📍</Text>
                     </TouchableOpacity>
