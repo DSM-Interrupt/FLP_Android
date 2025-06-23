@@ -257,14 +257,27 @@ export const MemberMainScreen: React.FC = () => {
         }
     }
 
+    // 멤버와 호스트 공통 로그아웃 함수
     const handleLogout = async () => {
         Alert.alert("로그아웃", "로그아웃 하시겠습니까?", [
             { text: "취소", style: "cancel" },
             {
                 text: "확인",
                 onPress: async () => {
-                    await authService.logout()
-                    socketService.disconnect()
+                    try {
+                        // 소켓 연결 해제
+                        if (socketRef.current) {
+                            socketRef.current.disconnect()
+                            socketRef.current = null
+                        }
+                        socketService.disconnect()
+
+                        // 프론트엔드 로그아웃 (App.tsx에서 자동으로 Auth 화면으로 이동)
+                        await authService.logout()
+                    } catch (error) {
+                        console.error("로그아웃 실패:", error)
+                        Alert.alert("오류", "로그아웃 중 오류가 발생했습니다.")
+                    }
                 },
             },
         ])
@@ -282,22 +295,6 @@ export const MemberMainScreen: React.FC = () => {
                 },
                 1000
             )
-        }
-    }
-
-    // 전체 보기 함수 (기존 함수를 별도로 유지)
-    const centerMapOnLocations = () => {
-        if (locationData && mapRef.current && mapReady) {
-            const { host, member } = locationData
-            const coordinates = [
-                { latitude: host.lat, longitude: host.lon },
-                { latitude: member.lat, longitude: member.lon },
-            ]
-
-            mapRef.current.fitToCoordinates(coordinates, {
-                edgePadding: { top: 100, right: 100, bottom: 100, left: 100 },
-                animated: true,
-            })
         }
     }
 
@@ -638,11 +635,6 @@ export const MemberMainScreen: React.FC = () => {
             <View style={dynamicStyles.header}>
                 <Text style={dynamicStyles.title}>FLP 멤버</Text>
                 <View style={dynamicStyles.headerButtons}>
-                    <View style={dynamicStyles.systemThemeIndicator}>
-                        <Text style={dynamicStyles.systemThemeText}>
-                            {systemTheme === "dark" ? "다크" : "라이트"}
-                        </Text>
-                    </View>
                     <TouchableOpacity
                         style={dynamicStyles.headerButton}
                         onPress={handleLogout}

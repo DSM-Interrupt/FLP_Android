@@ -31,14 +31,41 @@ class AuthService {
     private readonly REFRESH_TOKEN_KEY = "refresh_token"
     private readonly USER_TYPE_KEY = "user_type"
 
-    // 새로 추가할 속성들
+    // 토큰 갱신 관련 속성들
     private isRefreshing = false
     private failedQueue: Array<{
         resolve: (token: string) => void
         reject: (error: any) => void
     }> = []
 
-    // 기존 setupInterceptors() 메서드를 완전히 교체하세요
+    // 로그아웃 이벤트 시스템 추가
+    private logoutCallbacks: (() => void)[] = []
+
+    // 로그아웃 이벤트 리스너 등록
+    onLogout(callback: () => void): () => void {
+        this.logoutCallbacks.push(callback)
+
+        // unsubscribe 함수 반환
+        return () => {
+            const index = this.logoutCallbacks.indexOf(callback)
+            if (index > -1) {
+                this.logoutCallbacks.splice(index, 1)
+            }
+        }
+    }
+
+    // 로그아웃 이벤트 발생
+    private triggerLogoutEvent() {
+        console.log("🔔 로그아웃 이벤트 발생")
+        this.logoutCallbacks.forEach((callback) => {
+            try {
+                callback()
+            } catch (error) {
+                console.error("로그아웃 콜백 실행 중 오류:", error)
+            }
+        })
+    }
+
     setupInterceptors() {
         api.interceptors.request.use(async (config) => {
             const token = await this.getStoredAccessToken()
@@ -98,7 +125,6 @@ class AuthService {
         )
     }
 
-    // 새로 추가할 메서드
     private processQueue(error: any, token: string | null) {
         this.failedQueue.forEach(({ resolve, reject }) => {
             if (error) {
@@ -195,42 +221,29 @@ class AuthService {
     }
 
     async checkAutoLogin(): Promise<AutoLoginResult> {
-        const accessToken = await AsyncStorage.getItem(this.ACCESS_TOKEN_KEY)
-        const userType = await AsyncStorage.getItem(this.USER_TYPE_KEY)
-
-        if (!accessToken || !userType) return { success: false }
-
-        const endpoint =
-            userType === "member" ? "/member/verify" : "/host/verify"
-
         try {
-            const response = await api.get(endpoint, {
-                headers: { Authorization: `Bearer ${accessToken}` },
-            })
+            const accessToken = await AsyncStorage.getItem(
+                this.ACCESS_TOKEN_KEY
+            )
+            const userType = (await AsyncStorage.getItem(
+                this.USER_TYPE_KEY
+            )) as "member" | "host" | null
 
-            if (response.data.success) {
+            if (accessToken && userType) {
+                // API 헤더에만 세팅해두면, 이후 요청에 사용됩니다.
                 api.defaults.headers.common[
                     "Authorization"
                 ] = `Bearer ${accessToken}`
-                return {
-                    success: true,
-                    userType: userType as "member" | "host",
-                }
+                console.log("✅ 클라이언트 자동 로그인 OK:", userType)
+                return { success: true, userType }
+            } else {
+                console.log(
+                    "🔒 클라이언트 자동 로그인 실패: 토큰 또는 타입 없음"
+                )
+                return { success: false }
             }
-
-            await this.logout()
-            return { success: false }
-        } catch (error: any) {
-            if (error.response?.status === 401) {
-                const refreshResult = await this.refreshToken()
-                if (refreshResult.success) {
-                    return {
-                        success: true,
-                        userType: userType as "member" | "host",
-                    }
-                }
-            }
-            await this.logout()
+        } catch (e) {
+            console.error("❌ 클라이언트 자동 로그인 도중 오류:", e)
             return { success: false }
         }
     }
@@ -240,20 +253,23 @@ class AuthService {
         const userType = await AsyncStorage.getItem(this.USER_TYPE_KEY)
         if (!refreshToken || !userType) return { success: false }
 
-        const endpoint =
-            userType === "member" ? "/member/refresh" : "/host/refresh"
-        const response = await api.post(endpoint, { refreshToken })
+        try {
+            const response = await api.post("/auth/refresh", { refreshToken })
 
-        if (response.data.success && response.data.accessToken) {
-            await this.saveTokens(
-                response.data.accessToken,
-                response.data.refreshToken || refreshToken,
-                userType as "member" | "host"
-            )
-            return { success: true, accessToken: response.data.accessToken }
+            if (response.data.success && response.data.accessToken) {
+                await this.saveTokens(
+                    response.data.accessToken,
+                    response.data.refreshToken || refreshToken,
+                    userType as "member" | "host"
+                )
+                return { success: true, accessToken: response.data.accessToken }
+            }
+
+            return { success: false }
+        } catch (error) {
+            console.error("토큰 갱신 실패:", error)
+            return { success: false }
         }
-
-        return { success: false }
     }
 
     async saveTokens(
@@ -307,21 +323,38 @@ class AuthService {
         }
     }
 
+    // 로그아웃 (이벤트 발생)
     async logout() {
-        const userType = await AsyncStorage.getItem(this.USER_TYPE_KEY)
-        if (userType) {
-            const endpoint =
-                userType === "member" ? "/member/logout" : "/host/logout"
-            try {
-                await api.post(endpoint)
-            } catch {}
-        }
+        console.log("🚪 로그아웃 시작")
+
+        await this.clearAuthData()
+        console.log("✅ 로그아웃 완료")
+
+        // 로그아웃 이벤트 발생
+        this.triggerLogoutEvent()
+    }
+
+    async clearTokens() {
         await AsyncStorage.multiRemove([
             this.ACCESS_TOKEN_KEY,
             this.REFRESH_TOKEN_KEY,
             this.USER_TYPE_KEY,
         ])
-        delete api.defaults.headers.common["Authorization"]
+    }
+
+    // 인증 데이터 정리 (이벤트 발생 안함)
+    private async clearAuthData() {
+        try {
+            await AsyncStorage.multiRemove([
+                this.ACCESS_TOKEN_KEY,
+                this.REFRESH_TOKEN_KEY,
+                this.USER_TYPE_KEY,
+            ])
+            delete api.defaults.headers.common["Authorization"]
+            console.log("✅ 인증 데이터 정리 완료")
+        } catch (error) {
+            console.error("❌ 인증 데이터 정리 실패:", error)
+        }
     }
 
     async getStoredAccessToken(): Promise<string | null> {
