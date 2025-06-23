@@ -1,0 +1,50 @@
+{
+    "expo": {
+        "name": "FLP",
+        "slug": "flp",
+        "version": "1.0.0",
+        "orientation": "portrait",
+        "icon": "./assets/icon.png",
+        "userInterfaceStyle": "automatic",
+        "splash": {
+            "image": "./assets/splash.png",
+            "resizeMode": "contain",
+            "backgroundColor": "#22c55e"
+        },
+        "assetBundlePatterns": ["**/*"],
+        "ios": {
+            "supportsTablet": true,
+            "config": {
+                "googleMapsApiKey": "AIzaSyB04sRZrlceUZqW1gyYNP3DXnjcjl1Y4do"
+            }
+        },
+        "android": {
+            "adaptiveIcon": {
+                "foregroundImage": "./assets/adaptive-icon.png",
+                "backgroundColor": "#22c55e"
+            },
+            "config": {
+                "googleMaps": {
+                    "apiKey": "AIzaSyB04sRZrlceUZqW1gyYNP3DXnjcjl1Y4do"
+                }
+            }
+        },
+        "web": {
+            "favicon": "./assets/favicon.png"
+        },
+        "extra": {
+            "baseUrl": "https://flp24.com"
+        },
+        "plugins": [
+            [
+                "expo-build-properties",
+                {
+                    "android": {
+                        "enableProguardInReleaseBuilds": false,
+                        "enableShrinkResourcesInReleaseBuilds": false
+                    }
+                }
+            ]
+        ]
+    }
+}
