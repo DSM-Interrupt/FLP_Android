@@ -21,6 +21,7 @@ import api from "../services/api"
 import { socketService } from "../services/socket"
 import { authService } from "../services/auth"
 import { io } from "socket.io-client"
+import Ionicons from "@expo/vector-icons/Ionicons"
 
 const { width, height } = Dimensions.get("window")
 
@@ -418,34 +419,6 @@ export const HostMainScreen: React.FC = () => {
         }
     }
 
-    // 전체 보기 함수 (기존 centerMapOnAll 함수를 별도로 유지)
-    const centerMapOnAll = () => {
-        if (locationData && mapRef.current && mapReady) {
-            const coordinates = [
-                {
-                    latitude: locationData.host.lat,
-                    longitude: locationData.host.lon,
-                },
-                ...locationData.members.map((member) => ({
-                    latitude: member.lat,
-                    longitude: member.lon,
-                })),
-            ]
-
-            if (coordinates.length > 0) {
-                mapRef.current.fitToCoordinates(coordinates, {
-                    edgePadding: {
-                        top: 100,
-                        right: 100,
-                        bottom: 100,
-                        left: 100,
-                    },
-                    animated: true,
-                })
-            }
-        }
-    }
-
     // 멤버와 호스트 공통 로그아웃 함수
     const handleLogout = async () => {
         Alert.alert("로그아웃", "로그아웃 하시겠습니까?", [
@@ -776,7 +749,15 @@ export const HostMainScreen: React.FC = () => {
                         style={dynamicStyles.headerButton}
                         onPress={handleLogout}
                     >
-                        <Text style={{ fontSize: 20 }}>🚪</Text>
+                        <Text style={{ fontSize: 20 }}>
+                            <Ionicons
+                                name="exit-outline"
+                                size={24}
+                                color={
+                                    isDark ? grayColors[100] : grayColors[800]
+                                }
+                            />
+                        </Text>
                     </TouchableOpacity>
                 </View>
                 <View style={dynamicStyles.loadingContainer}>
@@ -809,7 +790,15 @@ export const HostMainScreen: React.FC = () => {
                         style={dynamicStyles.headerButton}
                         onPress={handleLogout}
                     >
-                        <Text style={{ fontSize: 20 }}>🚪</Text>
+                        <Text style={{ fontSize: 20 }}>
+                            <Ionicons
+                                name="exit-outline"
+                                size={24}
+                                color={
+                                    isDark ? grayColors[100] : grayColors[800]
+                                }
+                            />
+                        </Text>
                     </TouchableOpacity>
                 </View>
                 <View style={dynamicStyles.errorContainer}>
@@ -837,7 +826,15 @@ export const HostMainScreen: React.FC = () => {
                         style={dynamicStyles.headerButton}
                         onPress={handleLogout}
                     >
-                        <Text style={{ fontSize: 20 }}>🚪</Text>
+                        <Text style={{ fontSize: 20 }}>
+                            <Ionicons
+                                name="exit-outline"
+                                size={24}
+                                color={
+                                    isDark ? grayColors[100] : grayColors[800]
+                                }
+                            />
+                        </Text>
                     </TouchableOpacity>
                 </View>
                 <View style={dynamicStyles.statusRow}>
@@ -889,7 +886,15 @@ export const HostMainScreen: React.FC = () => {
                         style={dynamicStyles.headerButton}
                         onPress={handleLogout}
                     >
-                        <Text style={{ fontSize: 20 }}>🚪</Text>
+                        <Text style={{ fontSize: 20 }}>
+                            <Ionicons
+                                name="exit-outline"
+                                size={24}
+                                color={
+                                    isDark ? grayColors[100] : grayColors[800]
+                                }
+                            />
+                        </Text>
                     </TouchableOpacity>
                 </View>
                 <View style={dynamicStyles.loadingContainer}>
@@ -910,7 +915,13 @@ export const HostMainScreen: React.FC = () => {
                     style={dynamicStyles.headerButton}
                     onPress={handleLogout}
                 >
-                    <Text style={{ fontSize: 20 }}>🚪</Text>
+                    <Text style={{ fontSize: 20 }}>
+                        <Ionicons
+                            name="exit-outline"
+                            size={24}
+                            color={isDark ? grayColors[100] : grayColors[800]}
+                        />
+                    </Text>
                 </TouchableOpacity>
             </View>
 
@@ -952,7 +963,7 @@ export const HostMainScreen: React.FC = () => {
                         },
                     ]}
                 >
-                    {socketConnected ? "🟢 실시간 연결" : "🔴 연결 끊김"}
+                    {socketConnected ? "🟢" : "🔴"}
                 </Text>
             </View>
 
@@ -1032,14 +1043,22 @@ export const HostMainScreen: React.FC = () => {
                         ]}
                         onPress={handleRefresh}
                     >
-                        <Text style={dynamicStyles.buttonText}>🔄</Text>
+                        <Text style={dynamicStyles.buttonText}>
+                            <Ionicons name="refresh" size={24} color="white" />
+                        </Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
                         style={dynamicStyles.actionButton}
                         onPress={centerMapOnHost}
                     >
-                        <Text style={dynamicStyles.buttonText}>📍</Text>
+                        <Text style={dynamicStyles.buttonText}>
+                            <Ionicons
+                                name="pin-sharp"
+                                size={24}
+                                color="white"
+                            />
+                        </Text>
                     </TouchableOpacity>
                 </View>
             </View>

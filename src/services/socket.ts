@@ -15,9 +15,6 @@ class SocketService {
 
     public baseUrl = BASE_URL
 
-    /**
-     * 역할에 따른 엔드포인트 연결
-     */
     async connectAsRole(role: UserRole): Promise<Socket> {
         if (this.socket?.connected && this.currentRole === role) {
             console.log(`Socket already connected as ${role}`)
