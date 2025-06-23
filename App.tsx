@@ -22,12 +22,24 @@ export default function App() {
             const result = await authService.checkAutoLogin()
             if (!result.success) {
                 setIsAuthenticated(false)
+                setUserType(null)
             } else {
                 setIsAuthenticated(true)
+                setUserType(result.userType ?? null)
             }
+            setIsLoading(false)
         }
-
         tryAutoLogin()
+    }, [])
+
+    useEffect(() => {
+        const unsubscribe = authService.onLogout(() => {
+            console.log("🔔 App.tsx: 로그아웃 감지됨")
+            setIsAuthenticated(false)
+            setUserType(null)
+        })
+
+        return unsubscribe
     }, [])
 
     const handleAuthSuccess = (newUserType: "member" | "host") => {
@@ -39,6 +51,10 @@ export default function App() {
     if (isLoading) {
         return <LoadingScreen />
     }
+
+    const AuthScreenWrapper = (props: any) => (
+        <AuthScreen {...props} onAuthSuccess={handleAuthSuccess} />
+    )
 
     return (
         <QueryClientProvider client={queryClient}>
@@ -53,14 +69,10 @@ export default function App() {
                         }
                     >
                         {!isAuthenticated ? (
-                            <Stack.Screen name="Auth">
-                                {(props) => (
-                                    <AuthScreen
-                                        {...props}
-                                        onAuthSuccess={handleAuthSuccess}
-                                    />
-                                )}
-                            </Stack.Screen>
+                            <Stack.Screen
+                                name="Auth"
+                                component={AuthScreenWrapper}
+                            />
                         ) : userType === "member" ? (
                             <Stack.Screen
                                 name="MemberMain"

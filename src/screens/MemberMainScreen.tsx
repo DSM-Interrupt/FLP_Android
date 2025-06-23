@@ -16,6 +16,7 @@ import { colorTable } from "../styles/colorTable"
 import { socketService } from "../services/socket"
 import { authService } from "../services/auth"
 import { io } from "socket.io-client"
+import Ionicons from "@expo/vector-icons/Ionicons"
 
 const { width, height } = Dimensions.get("window")
 
@@ -475,16 +476,21 @@ export const MemberMainScreen: React.FC = () => {
                 <View style={dynamicStyles.header}>
                     <Text style={dynamicStyles.title}>FLP 멤버</Text>
                     <View style={dynamicStyles.headerButtons}>
-                        <View style={dynamicStyles.systemThemeIndicator}>
-                            <Text style={dynamicStyles.systemThemeText}>
-                                {systemTheme === "dark" ? "다크" : "라이트"}
-                            </Text>
-                        </View>
                         <TouchableOpacity
                             style={dynamicStyles.headerButton}
                             onPress={handleLogout}
                         >
-                            <Text style={{ fontSize: 20 }}>🚪</Text>
+                            <Text style={{ fontSize: 20 }}>
+                                <Ionicons
+                                    name="exit-outline"
+                                    size={24}
+                                    color={
+                                        isDark
+                                            ? grayColors[100]
+                                            : grayColors[800]
+                                    }
+                                />
+                            </Text>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -515,16 +521,22 @@ export const MemberMainScreen: React.FC = () => {
                 <View style={dynamicStyles.header}>
                     <Text style={dynamicStyles.title}>FLP 멤버</Text>
                     <View style={dynamicStyles.headerButtons}>
-                        <View style={dynamicStyles.systemThemeIndicator}>
-                            <Text style={dynamicStyles.systemThemeText}>
-                                {systemTheme === "dark" ? "다크" : "라이트"}
-                            </Text>
-                        </View>
+                        <View style={dynamicStyles.systemThemeIndicator}></View>
                         <TouchableOpacity
                             style={dynamicStyles.headerButton}
                             onPress={handleLogout}
                         >
-                            <Text style={{ fontSize: 20 }}>🚪</Text>
+                            <Text style={{ fontSize: 20 }}>
+                                <Ionicons
+                                    name="exit-outline"
+                                    size={24}
+                                    color={
+                                        isDark
+                                            ? grayColors[100]
+                                            : grayColors[800]
+                                    }
+                                />
+                            </Text>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -554,7 +566,17 @@ export const MemberMainScreen: React.FC = () => {
                             style={dynamicStyles.headerButton}
                             onPress={handleLogout}
                         >
-                            <Text style={{ fontSize: 20 }}>🚪</Text>
+                            <Text style={{ fontSize: 20 }}>
+                                <Ionicons
+                                    name="exit-outline"
+                                    size={24}
+                                    color={
+                                        isDark
+                                            ? grayColors[100]
+                                            : grayColors[800]
+                                    }
+                                />
+                            </Text>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -574,7 +596,7 @@ export const MemberMainScreen: React.FC = () => {
                                 { color: successColors[500] },
                             ]}
                         >
-                            🟢 실시간 연결
+                            🟢
                         </Text>
                     </View>
                     <Text style={dynamicStyles.distanceText}>
@@ -605,11 +627,6 @@ export const MemberMainScreen: React.FC = () => {
                 <View style={dynamicStyles.header}>
                     <Text style={dynamicStyles.title}>FLP 멤버</Text>
                     <View style={dynamicStyles.headerButtons}>
-                        <View style={dynamicStyles.systemThemeIndicator}>
-                            <Text style={dynamicStyles.systemThemeText}>
-                                {systemTheme === "dark" ? "다크" : "라이트"}
-                            </Text>
-                        </View>
                         <TouchableOpacity
                             style={dynamicStyles.headerButton}
                             onPress={handleLogout}
@@ -639,7 +656,15 @@ export const MemberMainScreen: React.FC = () => {
                         style={dynamicStyles.headerButton}
                         onPress={handleLogout}
                     >
-                        <Text style={{ fontSize: 20 }}>🚪</Text>
+                        <Text style={{ fontSize: 20 }}>
+                            <Ionicons
+                                name="exit-outline"
+                                size={24}
+                                color={
+                                    isDark ? grayColors[100] : grayColors[800]
+                                }
+                            />
+                        </Text>
                     </TouchableOpacity>
                 </View>
             </View>
@@ -664,7 +689,7 @@ export const MemberMainScreen: React.FC = () => {
                             },
                         ]}
                     >
-                        {socketConnected ? "🟢 실시간 연결" : "🔴 연결 끊김"}
+                        {socketConnected ? "🟢" : "🔴"}
                     </Text>
                 </View>
                 <Text style={dynamicStyles.distanceText}>
@@ -744,14 +769,22 @@ export const MemberMainScreen: React.FC = () => {
                         ]}
                         onPress={handleRefresh}
                     >
-                        <Text style={dynamicStyles.buttonText}>🔄</Text>
+                        <Text style={dynamicStyles.buttonText}>
+                            <Ionicons name="refresh" size={24} color="white" />
+                        </Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
                         style={dynamicStyles.actionButton}
                         onPress={centerMapOnHost}
                     >
-                        <Text style={dynamicStyles.buttonText}>📍</Text>
+                        <Text style={dynamicStyles.buttonText}>
+                            <Ionicons
+                                name="pin-sharp"
+                                size={24}
+                                color="white"
+                            />
+                        </Text>
                     </TouchableOpacity>
                 </View>
             </View>
