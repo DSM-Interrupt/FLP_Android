@@ -38,22 +38,6 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthSuccess }) => {
         password: "",
     })
 
-    useEffect(() => {
-        checkAutoLogin()
-    }, [])
-
-    const checkAutoLogin = async () => {
-        try {
-            const result = await authService.checkAutoLogin()
-            if (result.success && result.userType) {
-                console.log("Auto login successful:", result.userType)
-                onAuthSuccess(result.userType)
-            }
-        } catch (error) {
-            console.log("Auto login failed:", error)
-        }
-    }
-
     const loginMutation = useMutation({
         mutationFn: async () => {
             console.log("🚀 로그인 뮤테이션 시작")

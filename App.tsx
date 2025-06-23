@@ -18,21 +18,22 @@ export default function App() {
     const [userType, setUserType] = useState<"member" | "host" | null>(null)
 
     useEffect(() => {
-        initializeApp()
+        const tryAutoLogin = async () => {
+            const result = await authService.checkAutoLogin()
+            if (!result.success) {
+                setIsAuthenticated(false)
+            } else {
+                setIsAuthenticated(true)
+            }
+        }
+
+        tryAutoLogin()
     }, [])
 
-    const initializeApp = async () => {
-        try {
-            const result = await authService.checkAutoLogin()
-            setIsAuthenticated(result.success)
-            setUserType(result.userType ?? null)
-        } catch (error) {
-            console.error("App initialization error:", error)
-            setIsAuthenticated(false)
-            setUserType(null)
-        } finally {
-            setIsLoading(false)
-        }
+    const handleAuthSuccess = (newUserType: "member" | "host") => {
+        console.log("🎉 인증 성공:", newUserType)
+        setIsAuthenticated(true)
+        setUserType(newUserType)
     }
 
     if (isLoading) {
@@ -43,16 +44,20 @@ export default function App() {
         <QueryClientProvider client={queryClient}>
             <ThemeProvider>
                 <NavigationContainer>
-                    <Stack.Navigator screenOptions={{ headerShown: false }}>
+                    <Stack.Navigator
+                        screenOptions={{ headerShown: false }}
+                        key={
+                            isAuthenticated
+                                ? `authenticated-${userType}`
+                                : "unauthenticated"
+                        }
+                    >
                         {!isAuthenticated ? (
                             <Stack.Screen name="Auth">
                                 {(props) => (
                                     <AuthScreen
                                         {...props}
-                                        onAuthSuccess={(userType) => {
-                                            setIsAuthenticated(true)
-                                            setUserType(userType)
-                                        }}
+                                        onAuthSuccess={handleAuthSuccess}
                                     />
                                 )}
                             </Stack.Screen>

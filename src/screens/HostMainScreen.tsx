@@ -446,14 +446,27 @@ export const HostMainScreen: React.FC = () => {
         }
     }
 
+    // 멤버와 호스트 공통 로그아웃 함수
     const handleLogout = async () => {
         Alert.alert("로그아웃", "로그아웃 하시겠습니까?", [
             { text: "취소", style: "cancel" },
             {
                 text: "확인",
                 onPress: async () => {
-                    await authService.logout()
-                    socketService.disconnect()
+                    try {
+                        // 소켓 연결 해제
+                        if (socketRef.current) {
+                            socketRef.current.disconnect()
+                            socketRef.current = null
+                        }
+                        socketService.disconnect()
+
+                        // 프론트엔드 로그아웃 (App.tsx에서 자동으로 Auth 화면으로 이동)
+                        await authService.logout()
+                    } catch (error) {
+                        console.error("로그아웃 실패:", error)
+                        Alert.alert("오류", "로그아웃 중 오류가 발생했습니다.")
+                    }
                 },
             },
         ])
@@ -1020,16 +1033,6 @@ export const HostMainScreen: React.FC = () => {
                         onPress={handleRefresh}
                     >
                         <Text style={dynamicStyles.buttonText}>🔄</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                        style={[
-                            dynamicStyles.actionButton,
-                            dynamicStyles.allViewButton,
-                        ]}
-                        onPress={centerMapOnAll}
-                    >
-                        <Text style={dynamicStyles.buttonText}>🗺️</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
