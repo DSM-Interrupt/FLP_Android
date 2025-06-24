@@ -3,14 +3,13 @@ import AsyncStorage from "@react-native-async-storage/async-storage"
 import Constants from "expo-constants"
 import { authService } from "./auth"
 
-const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL
+const BASE_URL = Constants.expoConfig?.extra?.baseUrl || "https://flp24.com"
 
 const api = axios.create({
     baseURL: BASE_URL,
     timeout: 10000,
 })
 
-// Request interceptor to add auth token
 api.interceptors.request.use(
     async (config) => {
         const token = await AsyncStorage.getItem("accessToken")
