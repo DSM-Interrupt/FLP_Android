@@ -19,6 +19,8 @@
             }
         },
         "android": {
+            "package": "com.teamInturrpt.flp",
+            "versionCode": 1,
             "adaptiveIcon": {
                 "foregroundImage": "./assets/adaptive-icon.png",
                 "backgroundColor": "#22c55e"
@@ -33,7 +35,10 @@
             "favicon": "./assets/favicon.png"
         },
         "extra": {
-            "baseUrl": "https://flp24.com"
+            "baseUrl": "https://flp24.com",
+            "eas": {
+                "projectId": "4107784e-7d82-468c-8e90-b54088e58be0"
+            }
         },
         "plugins": [
             [
@@ -45,6 +50,7 @@
                     }
                 }
             ]
-        ]
+        ],
+        "owner": "jihoseo"
     }
 }
