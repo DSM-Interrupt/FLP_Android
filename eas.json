@@ -1,22 +1,33 @@
 {
     "cli": {
-        "appVersionSource": "local"
+        "version": ">= 5.0.0",
+        "appVersionSource": "remote"
     },
     "build": {
-        "production": {
-            "releaseChannel": "production",
-            "android": {
-                "buildType": "app-bundle"
-            },
-            "env": {
-                "EXPO_PUBLIC_BASE_URL": "https://flp24.com",
-                "EXPO_PUBLIC_GOOGLE_MAPS_API_KEY": "AIzaSyB04sRZrlceUZqW1gyYNP3DXnjcjl1Y4do"
-            }
+        "development": {
+            "developmentClient": true,
+            "distribution": "internal"
         },
         "preview": {
             "android": {
                 "buildType": "apk"
             }
+        },
+        "preview-debug": {
+            "android": {
+                "buildType": "apk"
+            },
+            "env": {
+                "NODE_ENV": "development"
+            }
+        },
+        "production": {
+            "android": {
+                "buildType": "apk"
+            }
         }
+    },
+    "submit": {
+        "production": {}
     }
 }
