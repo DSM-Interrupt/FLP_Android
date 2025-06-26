@@ -1,5 +1,5 @@
 import "dotenv/config"
-import { ExpoConfig, ConfigContext } from "@expo/config"
+import type { ExpoConfig, ConfigContext } from "@expo/config"
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
     ...config,
@@ -17,28 +17,19 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     assetBundlePatterns: ["**/*"],
     ios: {
         supportsTablet: true,
-        config: {
-            googleMapsApiKey: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY,
-        },
     },
     android: {
         package: "com.teamInturrpt.flp",
-        versionCode: 1,
         adaptiveIcon: {
             foregroundImage: "./assets/adaptive-icon.png",
             backgroundColor: "#22c55e",
         },
-        config: {
-            googleMaps: {
-                apiKey: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY,
-            },
-        },
+        permissions: ["INTERNET", "ACCESS_NETWORK_STATE"],
     },
     web: {
         favicon: "./assets/favicon.png",
     },
     extra: {
-        baseUrl: process.env.EXPO_PUBLIC_BASE_URL,
         eas: {
             projectId: "4107784e-7d82-468c-8e90-b54088e58be0",
         },
@@ -50,9 +41,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
                 android: {
                     enableProguardInReleaseBuilds: false,
                     enableShrinkResourcesInReleaseBuilds: false,
+                    usesCleartextTraffic: true,
                 },
             },
         ],
     ],
+
     owner: "jihoseo",
 })
