@@ -29,8 +29,14 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
             backgroundColor: "#22c55e",
         },
         permissions: ["INTERNET", "ACCESS_NETWORK_STATE"],
-        scheme: "flp", // ✅ 딥링크 대응
+        scheme: "flp",
+        config: {
+            googleMaps: {
+                apiKey: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY, // ✅ 꼭 필요
+            },
+        },
     },
+
     web: {
         favicon: "./assets/favicon.png",
     },
