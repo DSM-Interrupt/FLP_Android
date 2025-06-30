@@ -3,8 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage"
 import Constants from "expo-constants"
 import { authService } from "./auth"
 
-const BASE_URL =
-    Constants.expoConfig?.extra?.baseUrl ?? process.env.EXPO_BASE_URL
+const BASE_URL = Constants.expoConfig?.extra?.baseUrl ?? "https://flp24.com"
 
 const api = axios.create({
     baseURL: BASE_URL,
