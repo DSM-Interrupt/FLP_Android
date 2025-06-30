@@ -1,3 +1,4 @@
+import "react-native-url-polyfill/auto"
 import React, { useEffect, useState } from "react"
 import { NavigationContainer } from "@react-navigation/native"
 import { createStackNavigator } from "@react-navigation/stack"
@@ -19,16 +20,24 @@ export default function App() {
 
     useEffect(() => {
         const tryAutoLogin = async () => {
-            const result = await authService.checkAutoLogin()
-            if (!result.success) {
+            try {
+                const result = await authService.checkAutoLogin()
+                if (!result.success) {
+                    setIsAuthenticated(false)
+                    setUserType(null)
+                } else {
+                    setIsAuthenticated(true)
+                    setUserType(result.userType ?? null)
+                }
+            } catch (error) {
+                console.error("자동 로그인 실패:", error)
                 setIsAuthenticated(false)
                 setUserType(null)
-            } else {
-                setIsAuthenticated(true)
-                setUserType(result.userType ?? null)
+            } finally {
+                setIsLoading(false)
             }
-            setIsLoading(false)
         }
+
         tryAutoLogin()
     }, [])
 
