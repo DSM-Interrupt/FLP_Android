@@ -63,6 +63,7 @@ export const HostMainScreen: React.FC = () => {
     const [locationData, setLocationData] = useState<HostLocationData | null>(
         null
     )
+    const [mapRenderKey, setMapRenderKey] = useState(0)
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [showMemberList, setShowMemberList] = useState(false)
@@ -152,6 +153,37 @@ export const HostMainScreen: React.FC = () => {
         onSuccess: () => {
             setShowDistanceSettings(false)
             Alert.alert("성공", "거리 설정이 변경되었습니다.")
+
+            setLocationData((prev) => {
+                if (!prev) return null
+
+                const { safe, warning, danger } = distanceSettings
+
+                const updatedMembers = prev.members.map((member) => {
+                    const dist = member.distance
+                    const newDanger =
+                        dist > danger
+                            ? 3
+                            : dist > warning
+                            ? 2
+                            : dist > safe
+                            ? 1
+                            : 0
+
+                    return {
+                        ...member,
+                        danger: newDanger,
+                    }
+                })
+
+                return {
+                    ...prev,
+                    distanceInfo: { safe, warning, danger },
+                    members: updatedMembers,
+                }
+            })
+
+            setMapRenderKey((prev) => prev + 1) // 💥 MapView 강제 리렌더
         },
         onError: (error: any) => {
             // 실패 시 원래 상태로 복구
@@ -229,16 +261,17 @@ export const HostMainScreen: React.FC = () => {
             }
 
             // 토큰을 query parameter로 전송하는 직접 연결
-            const socket = io(`wss://flp24.com/host/location`, {
-                query: {
-                    Authorization: `Bearer ${token}`,
-                },
-                transports: ["websocket"],
+            const socket = io("wss://flp24.com/host/location", {
+                query: { Authorization: `Bearer ${token}` },
                 forceNew: true,
+                // transports: ["websocket"],
             })
 
             // 소켓 인스턴스 저장
             socketRef.current = socket
+            ;(socket.io as any).on("ping", () => {
+                console.log("📡 ping 전송됨")
+            })
 
             // 연결 대기
             await new Promise((resolve, reject) => {
@@ -988,7 +1021,7 @@ export const HostMainScreen: React.FC = () => {
 
                     {locationData.members.map((member, index) => (
                         <Marker
-                            key={index}
+                            key={`${mapRenderKey}-${member.lat}-${member.lon}`}
                             coordinate={{
                                 latitude: member.lat,
                                 longitude: member.lon,
