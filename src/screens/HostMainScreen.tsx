@@ -269,21 +269,30 @@ export const HostMainScreen: React.FC = () => {
 
             // 소켓 인스턴스 저장
             socketRef.current = socket
-            ;(socket.io as any).on("ping", () => {
-                console.log("📡 ping 전송됨")
-            })
 
             // 연결 대기
             await new Promise((resolve, reject) => {
                 socket.on("connect", () => {
-                    console.log("✅ 호스트 소켓 연결 성공 (직접 연결)")
+                    console.log("✅ 소켓 연결됨")
+                    if (timeoutRef.current) {
+                        clearTimeout(timeoutRef.current)
+                        timeoutRef.current = null
+                    }
                     resolve(socket)
                 })
 
                 socket.on("connect_error", (error) => {
-                    console.error("❌ 호스트 소켓 연결 실패:", error)
+                    console.error("❌ 소켓 연결 실패:", error)
+                    if (timeoutRef.current) {
+                        clearTimeout(timeoutRef.current)
+                        timeoutRef.current = null
+                    }
                     reject(error)
                 })
+            })
+
+            socket.on("connect", () => {
+                console.log("✅ 소켓 connected 이벤트 호출됨") // 확인용 로그
             })
 
             setSocketConnected(true)
