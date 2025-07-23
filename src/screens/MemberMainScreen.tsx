@@ -102,10 +102,8 @@ export const MemberMainScreen: React.FC = () => {
             const token = await authService.getStoredAccessToken()
 
             if (!token) {
-                console.log("❌ 토큰이 없어 소켓 연결 실패")
-                setSocketConnected(false)
-                setIsLoading(false)
-                setError("인증 토큰이 없습니다.")
+                console.log("❌ 토큰이 없어 자동 로그아웃 처리")
+                await authService.logout()
                 return
             }
 
