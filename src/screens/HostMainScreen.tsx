@@ -20,6 +20,7 @@ import { socketService } from "../services/socket"
 import { authService } from "../services/auth"
 import { io } from "socket.io-client"
 import Ionicons from "@expo/vector-icons/Ionicons"
+import { sendLocalPushNotification } from "../utils/push"
 
 const { width, height } = Dimensions.get("window")
 
@@ -74,6 +75,7 @@ export const HostMainScreen: React.FC = () => {
     })
     const [mapReady, setMapReady] = useState(false)
     const [socketConnected, setSocketConnected] = useState(false)
+    const previousDangerStatesRef = useRef<Record<string, number>>({})
 
     const updateMemberNameMutation = useMutation({
         mutationFn: async ({
@@ -286,6 +288,28 @@ export const HostMainScreen: React.FC = () => {
 
             socket.on("info", (data: any) => {
                 console.log("📍 호스트 위치 데이터 수신 (info):", data)
+
+                const dangerMembers: string[] = []
+
+                data.members?.forEach((member: any) => {
+                    const name = member.memberName || "Unknown"
+                    const currentDanger = member.danger || 0
+                    const prevDanger =
+                        previousDangerStatesRef.current[name] ?? 0
+
+                    if (currentDanger === 3 && prevDanger !== 3) {
+                        dangerMembers.push(name)
+                    }
+
+                    previousDangerStatesRef.current[name] = currentDanger
+                })
+
+                dangerMembers.forEach((name) => {
+                    sendLocalPushNotification(
+                        "이탈 감지",
+                        `${name}님이 이탈했습니다.`
+                    )
+                })
 
                 try {
                     const hostLocationData: HostLocationData = {
