@@ -31,21 +31,17 @@ class AuthService {
     private readonly REFRESH_TOKEN_KEY = "refresh_token"
     private readonly USER_TYPE_KEY = "user_type"
 
-    // 토큰 갱신 관련 속성들
     private isRefreshing = false
     private failedQueue: Array<{
         resolve: (token: string) => void
         reject: (error: any) => void
     }> = []
 
-    // 로그아웃 이벤트 시스템 추가
     private logoutCallbacks: (() => void)[] = []
 
-    // 로그아웃 이벤트 리스너 등록
     onLogout(callback: () => void): () => void {
         this.logoutCallbacks.push(callback)
 
-        // unsubscribe 함수 반환
         return () => {
             const index = this.logoutCallbacks.indexOf(callback)
             if (index > -1) {
@@ -54,7 +50,6 @@ class AuthService {
         }
     }
 
-    // 로그아웃 이벤트 발생
     private triggerLogoutEvent() {
         console.log("🔔 로그아웃 이벤트 발생")
         this.logoutCallbacks.forEach((callback) => {
@@ -79,7 +74,6 @@ class AuthService {
                 const originalRequest = error.config
 
                 if (error.response?.status === 401 && !originalRequest._retry) {
-                    // 이미 토큰 갱신 중이면 대기열에 추가
                     if (this.isRefreshing) {
                         return new Promise((resolve, reject) => {
                             this.failedQueue.push({ resolve, reject })
@@ -102,7 +96,6 @@ class AuthService {
                             refreshResult.success &&
                             refreshResult.accessToken
                         ) {
-                            // 대기 중인 모든 요청 처리
                             this.processQueue(null, refreshResult.accessToken)
 
                             originalRequest.headers.Authorization = `Bearer ${refreshResult.accessToken}`
@@ -176,7 +169,6 @@ class AuthService {
                 hasRefreshToken: !!response.data.refreshToken,
             })
 
-            // 🔥 중요: accessToken이 있으면 무조건 저장
             if (response.data.accessToken) {
                 console.log("✅ 토큰 저장 시도 중...")
 
@@ -188,7 +180,6 @@ class AuthService {
                     )
                     console.log("✅ 토큰 저장 완료")
 
-                    // 저장 확인
                     const savedToken = await this.getStoredAccessToken()
                     console.log(
                         "✅ 저장된 토큰 확인:",
@@ -201,7 +192,6 @@ class AuthService {
                 console.log("❌ accessToken이 없어서 저장하지 않음")
             }
 
-            // success 필드 처리
             const success =
                 response.data.success !== undefined
                     ? response.data.success
@@ -230,7 +220,6 @@ class AuthService {
             )) as "member" | "host" | null
 
             if (accessToken && userType) {
-                // API 헤더에만 세팅해두면, 이후 요청에 사용됩니다.
                 api.defaults.headers.common[
                     "Authorization"
                 ] = `Bearer ${accessToken}`
@@ -287,7 +276,6 @@ class AuthService {
         })
 
         try {
-            // 각각 개별적으로 저장하고 확인
             await AsyncStorage.setItem(this.ACCESS_TOKEN_KEY, accessToken)
             console.log("✅ ACCESS_TOKEN 저장 완료")
 
@@ -297,7 +285,6 @@ class AuthService {
             await AsyncStorage.setItem(this.USER_TYPE_KEY, userType)
             console.log("✅ USER_TYPE 저장 완료")
 
-            // 저장 후 즉시 확인
             const savedAccessToken = await AsyncStorage.getItem(
                 this.ACCESS_TOKEN_KEY
             )
@@ -312,7 +299,6 @@ class AuthService {
                 userType: savedUserType ? "✅ 저장됨" : "❌ 저장 안됨",
             })
 
-            // API 기본 헤더 설정
             api.defaults.headers.common[
                 "Authorization"
             ] = `Bearer ${accessToken}`
@@ -323,14 +309,12 @@ class AuthService {
         }
     }
 
-    // 로그아웃 (이벤트 발생)
     async logout() {
         console.log("🚪 로그아웃 시작")
 
         await this.clearAuthData()
         console.log("✅ 로그아웃 완료")
 
-        // 로그아웃 이벤트 발생
         this.triggerLogoutEvent()
     }
 
@@ -342,7 +326,6 @@ class AuthService {
         ])
     }
 
-    // 인증 데이터 정리 (이벤트 발생 안함)
     private async clearAuthData() {
         try {
             await AsyncStorage.multiRemove([
