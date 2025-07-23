@@ -1,5 +1,3 @@
-"use client"
-
 import type React from "react"
 import { useEffect, useState, useRef } from "react"
 import {
@@ -59,7 +57,6 @@ export const HostMainScreen: React.FC = () => {
     const timeoutRef = useRef<NodeJS.Timeout | null>(null)
     const socketRef = useRef<any>(null)
 
-    // 상태 관리
     const [locationData, setLocationData] = useState<HostLocationData | null>(
         null
     )
@@ -78,7 +75,6 @@ export const HostMainScreen: React.FC = () => {
     const [mapReady, setMapReady] = useState(false)
     const [socketConnected, setSocketConnected] = useState(false)
 
-    // 뮤테이션들 (HTTP API 사용) - 즉시 적용을 위한 optimistic update 추가
     const updateMemberNameMutation = useMutation({
         mutationFn: async ({
             beforeName,
@@ -94,7 +90,6 @@ export const HostMainScreen: React.FC = () => {
             return response.data
         },
         onMutate: async ({ beforeName, afterName }) => {
-            // Optimistic update - 즉시 UI에 반영
             if (locationData) {
                 const updatedMembers = locationData.members.map((member) =>
                     member.memberName === beforeName
@@ -113,7 +108,6 @@ export const HostMainScreen: React.FC = () => {
             Alert.alert("성공", "멤버 이름이 변경되었습니다.")
         },
         onError: (error: any, { beforeName }) => {
-            // 실패 시 원래 상태로 복구
             if (locationData) {
                 const revertedMembers = locationData.members.map((member) =>
                     member.memberName !== beforeName
@@ -142,7 +136,6 @@ export const HostMainScreen: React.FC = () => {
             return response.data
         },
         onMutate: async (newSettings) => {
-            // Optimistic update - 즉시 UI에 반영
             if (locationData) {
                 setLocationData({
                     ...locationData,
@@ -183,10 +176,9 @@ export const HostMainScreen: React.FC = () => {
                 }
             })
 
-            setMapRenderKey((prev) => prev + 1) // 💥 MapView 강제 리렌더
+            setMapRenderKey((prev) => prev + 1)
         },
         onError: (error: any) => {
-            // 실패 시 원래 상태로 복구
             if (locationData) {
                 setDistanceSettings(locationData.distanceInfo)
                 setLocationData({
@@ -201,7 +193,6 @@ export const HostMainScreen: React.FC = () => {
         },
     })
 
-    // 소켓 연결 및 이벤트 리스너 설정
     useEffect(() => {
         connectSocket()
         return () => {
@@ -224,7 +215,6 @@ export const HostMainScreen: React.FC = () => {
     }, [locationData])
 
     const connectSocket = async () => {
-        // 기존 타임아웃 정리
         if (timeoutRef.current) {
             clearTimeout(timeoutRef.current)
             timeoutRef.current = null
@@ -244,7 +234,6 @@ export const HostMainScreen: React.FC = () => {
 
             console.log("✅ 토큰 확인됨, 호스트 소켓 연결 중...")
 
-            // 타임아웃 설정 (5초로 단축)
             timeoutRef.current = setTimeout(() => {
                 console.log("⏰ 소켓 연결 타임아웃")
                 setIsLoading(false)
@@ -252,25 +241,20 @@ export const HostMainScreen: React.FC = () => {
                     setError("서버 연결 시간이 초과되었습니다.")
                 }
                 timeoutRef.current = null
-            }, 5000)
+            }, 10000)
 
-            // 기존 소켓이 있으면 연결 해제
             if (socketRef.current) {
                 socketRef.current.disconnect()
                 socketRef.current = null
             }
 
-            // 토큰을 query parameter로 전송하는 직접 연결
             const socket = io("wss://flp24.com/host/location", {
                 query: { Authorization: `Bearer ${token}` },
                 forceNew: true,
-                // transports: ["websocket"],
             })
 
-            // 소켓 인스턴스 저장
             socketRef.current = socket
 
-            // 연결 대기
             await new Promise((resolve, reject) => {
                 socket.on("connect", () => {
                     console.log("✅ 소켓 연결됨")
@@ -292,7 +276,7 @@ export const HostMainScreen: React.FC = () => {
             })
 
             socket.on("connect", () => {
-                console.log("✅ 소켓 connected 이벤트 호출됨") // 확인용 로그
+                console.log("✅ 소켓 connected 이벤트 호출됨")
             })
 
             setSocketConnected(true)
@@ -300,7 +284,6 @@ export const HostMainScreen: React.FC = () => {
             setError(null)
             console.log("✅ 호스트 소켓 연결 성공")
 
-            // 🔥 'info' 이벤트로 실시간 위치 데이터 수신
             socket.on("info", (data: any) => {
                 console.log("📍 호스트 위치 데이터 수신 (info):", data)
 
@@ -333,7 +316,6 @@ export const HostMainScreen: React.FC = () => {
                 }
             })
 
-            // 연결 상태 모니터링
             socketService.startConnectionMonitoring((connected: boolean) => {
                 console.log("🔄 호스트 소켓 연결 상태 변경:", connected)
                 setSocketConnected(connected)
@@ -349,14 +331,12 @@ export const HostMainScreen: React.FC = () => {
                 }
             })
 
-            // 에러 리스너
             socketService.onError((error: any) => {
                 console.error("❌ 호스트 소켓 에러:", error)
                 setError(`소켓 에러: ${error?.message || "알 수 없는 오류"}`)
                 setIsLoading(false)
             })
         } catch (error: any) {
-            // 에러 발생 시 타임아웃 정리
             if (timeoutRef.current) {
                 clearTimeout(timeoutRef.current)
                 timeoutRef.current = null
@@ -377,18 +357,15 @@ export const HostMainScreen: React.FC = () => {
     const handleRefresh = () => {
         console.log("🔄 호스트 수동 새로고침 실행")
 
-        // 기존 소켓 연결 해제
         if (socketRef.current) {
             socketRef.current.disconnect()
             socketRef.current = null
         }
 
-        // 상태 초기화
         setSocketConnected(false)
         setIsLoading(true)
         setError(null)
 
-        // 새로 연결
         connectSocket()
     }
 
@@ -435,10 +412,21 @@ export const HostMainScreen: React.FC = () => {
     }
 
     const handleDistanceSettingsChange = () => {
+        const { safe, warning, danger } = distanceSettings
+
         if (
-            distanceSettings.safe >= distanceSettings.warning ||
-            distanceSettings.warning >= distanceSettings.danger
+            safe < 0 ||
+            safe > 2000 ||
+            warning < 0 ||
+            warning > 2000 ||
+            danger < 0 ||
+            danger > 2000
         ) {
+            Alert.alert("오류", "거리는 0 ~ 2000m 사이로 설정해야 합니다.")
+            return
+        }
+
+        if (safe >= warning || warning >= danger) {
             Alert.alert("오류", "안전 < 경고 < 위험 순서로 설정해주세요.")
             return
         }
@@ -446,7 +434,6 @@ export const HostMainScreen: React.FC = () => {
         updateDistanceSettingsMutation.mutate(distanceSettings)
     }
 
-    // 호스트 위치로 지도 중심 이동 (변경된 부분)
     const centerMapOnHost = () => {
         if (locationData && mapRef.current && mapReady) {
             mapRef.current.animateToRegion(
@@ -461,7 +448,6 @@ export const HostMainScreen: React.FC = () => {
         }
     }
 
-    // 멤버와 호스트 공통 로그아웃 함수
     const handleLogout = async () => {
         Alert.alert("로그아웃", "로그아웃 하시겠습니까?", [
             { text: "취소", style: "cancel" },
@@ -469,14 +455,12 @@ export const HostMainScreen: React.FC = () => {
                 text: "확인",
                 onPress: async () => {
                     try {
-                        // 소켓 연결 해제
                         if (socketRef.current) {
                             socketRef.current.disconnect()
                             socketRef.current = null
                         }
                         socketService.disconnect()
 
-                        // 프론트엔드 로그아웃 (App.tsx에서 자동으로 Auth 화면으로 이동)
                         await authService.logout()
                     } catch (error) {
                         console.error("로그아웃 실패:", error)
@@ -781,7 +765,6 @@ export const HostMainScreen: React.FC = () => {
         },
     })
 
-    // 로딩 상태
     if (isLoading) {
         return (
             <View style={dynamicStyles.container}>
@@ -822,7 +805,6 @@ export const HostMainScreen: React.FC = () => {
         )
     }
 
-    // 에러 상태
     if (error) {
         return (
             <View style={dynamicStyles.container}>
@@ -858,7 +840,6 @@ export const HostMainScreen: React.FC = () => {
         )
     }
 
-    // 데이터 없음 (소켓은 연결되었지만 데이터가 없는 경우)
     if (!locationData && socketConnected) {
         return (
             <View style={dynamicStyles.container}>
@@ -918,7 +899,6 @@ export const HostMainScreen: React.FC = () => {
         )
     }
 
-    // 데이터 없음
     if (!locationData) {
         return (
             <View style={dynamicStyles.container}>
@@ -948,7 +928,6 @@ export const HostMainScreen: React.FC = () => {
         )
     }
 
-    // 메인 렌더링
     return (
         <View style={dynamicStyles.container}>
             <View style={dynamicStyles.header}>
@@ -1105,7 +1084,6 @@ export const HostMainScreen: React.FC = () => {
                 </View>
             </View>
 
-            {/* 멤버 목록 모달 */}
             <Modal
                 visible={showMemberList}
                 transparent={true}
@@ -1170,7 +1148,6 @@ export const HostMainScreen: React.FC = () => {
                 </View>
             </Modal>
 
-            {/* 멤버 이름 변경 모달 */}
             <Modal
                 visible={selectedMember !== null}
                 transparent={true}
@@ -1236,7 +1213,6 @@ export const HostMainScreen: React.FC = () => {
                 </View>
             </Modal>
 
-            {/* 거리 설정 모달 */}
             <Modal
                 visible={showDistanceSettings}
                 transparent={true}
