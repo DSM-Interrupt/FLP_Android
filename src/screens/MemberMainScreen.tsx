@@ -15,6 +15,7 @@ import { socketService } from "../services/socket"
 import { authService } from "../services/auth"
 import { io } from "socket.io-client"
 import Ionicons from "@expo/vector-icons/Ionicons"
+import { sendLocalPushNotification } from "../utils/push"
 
 const { width, height } = Dimensions.get("window")
 
@@ -56,6 +57,24 @@ export const MemberMainScreen: React.FC = () => {
     const [error, setError] = useState<string | null>(null)
     const [mapReady, setMapReady] = useState(false)
     const [socketConnected, setSocketConnected] = useState(false)
+
+    const previousDangerRef = useRef<number | null>(null)
+
+    useEffect(() => {
+        if (locationData) {
+            const currentDanger = locationData.danger
+            const previousDanger = previousDangerRef.current
+
+            if (currentDanger === 3 && previousDanger !== 3) {
+                sendLocalPushNotification(
+                    "이탈 감지",
+                    "지정된 구역을 벗어났습니다."
+                )
+            }
+
+            previousDangerRef.current = currentDanger
+        }
+    }, [locationData])
 
     useEffect(() => {
         connectSocket()
