@@ -9,6 +9,7 @@ import { MemberMainScreen } from "./src/screens/MemberMainScreen"
 import { HostMainScreen } from "./src/screens/HostMainScreen"
 import { LoadingScreen } from "./src/screens/LoadingScreen"
 import { authService } from "./src/services/auth"
+import { registerForPushNotificationsAsync } from "./src/utils/push"
 
 const Stack = createStackNavigator()
 const queryClient = new QueryClient()
@@ -22,12 +23,18 @@ export default function App() {
         const tryAutoLogin = async () => {
             try {
                 const result = await authService.checkAutoLogin()
+
                 if (!result.success) {
                     setIsAuthenticated(false)
                     setUserType(null)
                 } else {
                     setIsAuthenticated(true)
                     setUserType(result.userType ?? null)
+
+                    const token = await registerForPushNotificationsAsync()
+                    if (token) {
+                        console.log("푸시 토큰 저장 예정:", token)
+                    }
                 }
             } catch (error) {
                 console.error("자동 로그인 실패:", error)
