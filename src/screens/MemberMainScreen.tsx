@@ -1,3 +1,5 @@
+"use client"
+
 import type React from "react"
 import { useEffect, useState, useRef } from "react"
 import {
@@ -7,6 +9,7 @@ import {
     Alert,
     TouchableOpacity,
     Dimensions,
+    ActivityIndicator,
 } from "react-native"
 import MapView, { Marker, Circle, type Region } from "react-native-maps"
 import { useTheme } from "../contexts/ThemeContext"
@@ -37,7 +40,13 @@ interface MemberLocationData {
     }
 }
 
-export const MemberMainScreen: React.FC = () => {
+interface MemberMainScreenProps {
+    onLogout: () => void
+}
+
+export const MemberMainScreen: React.FC<MemberMainScreenProps> = ({
+    onLogout,
+}) => {
     const { theme, isDark, systemTheme } = useTheme()
 
     const colors = colorTable.main[theme]
@@ -49,6 +58,7 @@ export const MemberMainScreen: React.FC = () => {
     const mapRef = useRef<MapView>(null)
     const timeoutRef = useRef<NodeJS.Timeout | null>(null)
     const socketRef = useRef<any>(null)
+    const previousDangerRef = useRef<number | null>(null)
 
     const [locationData, setLocationData] = useState<MemberLocationData | null>(
         null
@@ -57,8 +67,15 @@ export const MemberMainScreen: React.FC = () => {
     const [error, setError] = useState<string | null>(null)
     const [mapReady, setMapReady] = useState(false)
     const [socketConnected, setSocketConnected] = useState(false)
+    const [ready, setReady] = useState(false)
 
-    const previousDangerRef = useRef<number | null>(null)
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setReady(true)
+        }, 300)
+
+        return () => clearTimeout(timer)
+    }, [])
 
     useEffect(() => {
         if (locationData) {
@@ -104,6 +121,7 @@ export const MemberMainScreen: React.FC = () => {
             if (!token) {
                 console.log("❌ 토큰이 없어 자동 로그아웃 처리")
                 await authService.logout()
+                onLogout()
                 return
             }
 
@@ -266,6 +284,7 @@ export const MemberMainScreen: React.FC = () => {
                         socketService.disconnect()
 
                         await authService.logout()
+                        onLogout()
                     } catch (error) {
                         console.error("로그아웃 실패:", error)
                         Alert.alert("오류", "로그아웃 중 오류가 발생했습니다.")
@@ -458,6 +477,20 @@ export const MemberMainScreen: React.FC = () => {
             fontWeight: "600",
         },
     })
+
+    if (!ready) {
+        return (
+            <View
+                style={{
+                    flex: 1,
+                    justifyContent: "center",
+                    alignItems: "center",
+                }}
+            >
+                <ActivityIndicator size="large" />
+            </View>
+        )
+    }
 
     if (isLoading) {
         return (

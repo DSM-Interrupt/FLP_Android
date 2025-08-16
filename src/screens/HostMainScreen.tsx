@@ -1,3 +1,5 @@
+"use client"
+
 import type React from "react"
 import { useEffect, useState, useRef } from "react"
 import {
@@ -10,6 +12,7 @@ import {
     TextInput,
     Modal,
     Dimensions,
+    ActivityIndicator,
 } from "react-native"
 import MapView, { Marker, Circle, type Region } from "react-native-maps"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
@@ -45,7 +48,11 @@ interface HostLocationData {
     members: Member[]
 }
 
-export const HostMainScreen: React.FC = () => {
+interface HostMainScreenProps {
+    onLogout: () => void
+}
+
+export const HostMainScreen: React.FC<HostMainScreenProps> = ({ onLogout }) => {
     const { theme, isDark, systemTheme } = useTheme()
     const colors = colorTable.main[theme]
     const grayColors = colorTable.gray[theme]
@@ -57,7 +64,9 @@ export const HostMainScreen: React.FC = () => {
     const mapRef = useRef<MapView>(null)
     const timeoutRef = useRef<NodeJS.Timeout | null>(null)
     const socketRef = useRef<any>(null)
+    const previousDangerStatesRef = useRef<Record<string, number>>({})
 
+    const [ready, setReady] = useState(false)
     const [locationData, setLocationData] = useState<HostLocationData | null>(
         null
     )
@@ -75,7 +84,6 @@ export const HostMainScreen: React.FC = () => {
     })
     const [mapReady, setMapReady] = useState(false)
     const [socketConnected, setSocketConnected] = useState(false)
-    const previousDangerStatesRef = useRef<Record<string, number>>({})
 
     const updateMemberNameMutation = useMutation({
         mutationFn: async ({
@@ -196,7 +204,18 @@ export const HostMainScreen: React.FC = () => {
     })
 
     useEffect(() => {
-        connectSocket()
+        // 300ms 후에 무거운 작업 시작
+        const timer = setTimeout(() => {
+            setReady(true)
+        }, 300)
+
+        return () => clearTimeout(timer)
+    }, [])
+
+    useEffect(() => {
+        if (ready) {
+            connectSocket()
+        }
         return () => {
             if (timeoutRef.current) {
                 clearTimeout(timeoutRef.current)
@@ -208,13 +227,27 @@ export const HostMainScreen: React.FC = () => {
             socketService.removeAllListeners()
             socketService.disconnect()
         }
-    }, [])
+    }, [ready])
 
     useEffect(() => {
         if (locationData) {
             setDistanceSettings(locationData.distanceInfo)
         }
     }, [locationData])
+
+    if (!ready) {
+        return (
+            <View
+                style={{
+                    flex: 1,
+                    justifyContent: "center",
+                    alignItems: "center",
+                }}
+            >
+                <ActivityIndicator size="large" />
+            </View>
+        )
+    }
 
     const connectSocket = async () => {
         if (timeoutRef.current) {
@@ -229,19 +262,22 @@ export const HostMainScreen: React.FC = () => {
             if (!token) {
                 console.log("❌ 토큰이 없어 자동 로그아웃 처리")
                 await authService.logout()
+                onLogout()
                 return
             }
 
             console.log("✅ 토큰 확인됨, 호스트 소켓 연결 중...")
 
+            const dataTimeoutRef = { current: null as NodeJS.Timeout | null }
+
             timeoutRef.current = setTimeout(() => {
                 console.log("⏰ 소켓 연결 타임아웃")
                 setIsLoading(false)
-                if (!socketConnected) {
-                    setError("서버 연결 시간이 초과되었습니다.")
-                }
+                setError(
+                    "서버 연결 시간이 초과되었습니다. 네트워크를 확인해주세요."
+                )
                 timeoutRef.current = null
-            }, 10000)
+            }, 8000)
 
             if (socketRef.current) {
                 socketRef.current.disconnect()
@@ -262,6 +298,17 @@ export const HostMainScreen: React.FC = () => {
                         clearTimeout(timeoutRef.current)
                         timeoutRef.current = null
                     }
+
+                    dataTimeoutRef.current = setTimeout(() => {
+                        console.log(
+                            "⏰ 데이터 수신 타임아웃 - 서버에서 위치 데이터를 받지 못했습니다"
+                        )
+                        setIsLoading(false)
+                        setError(
+                            "위치 데이터를 받지 못했습니다. 새로고침을 시도해주세요."
+                        )
+                    }, 10000)
+
                     resolve(socket)
                 })
 
@@ -277,6 +324,8 @@ export const HostMainScreen: React.FC = () => {
 
             socket.on("connect", () => {
                 console.log("✅ 소켓 connected 이벤트 호출됨")
+                console.log("📤 서버에 초기 데이터 요청 중...")
+                socket.emit("requestData")
             })
 
             setSocketConnected(true)
@@ -286,6 +335,11 @@ export const HostMainScreen: React.FC = () => {
 
             socket.on("info", (data: any) => {
                 console.log("📍 호스트 위치 데이터 수신 (info):", data)
+
+                if (dataTimeoutRef.current) {
+                    clearTimeout(dataTimeoutRef.current)
+                    dataTimeoutRef.current = null
+                }
 
                 const dangerMembers: string[] = []
 
@@ -332,9 +386,11 @@ export const HostMainScreen: React.FC = () => {
 
                     setLocationData(hostLocationData)
                     setError(null)
+                    setIsLoading(false)
                 } catch (transformError) {
                     console.error("❌ 호스트 데이터 변환 실패:", transformError)
                     setError("위치 데이터 변환에 실패했습니다.")
+                    setIsLoading(false)
                 }
             })
 
@@ -367,12 +423,14 @@ export const HostMainScreen: React.FC = () => {
             console.error("❌ 호스트 소켓 연결 오류:", error)
             setSocketConnected(false)
             setIsLoading(false)
-            setError(`연결 실패: ${error?.message || "알 수 없는 오류"}`)
+            setError(
+                `연결 실패: ${error?.message || "서버에 연결할 수 없습니다"}`
+            )
 
             setTimeout(() => {
                 console.log("🔄 호스트 소켓 재연결 시도...")
                 connectSocket()
-            }, 3000)
+            }, 2000)
         }
     }
 
@@ -484,6 +542,7 @@ export const HostMainScreen: React.FC = () => {
                         socketService.disconnect()
 
                         await authService.logout()
+                        onLogout()
                     } catch (error) {
                         console.error("로그아웃 실패:", error)
                         Alert.alert("오류", "로그아웃 중 오류가 발생했습니다.")
