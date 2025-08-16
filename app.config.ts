@@ -9,18 +9,20 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     orientation: "portrait",
     icon: "./assets/icon.png",
     userInterfaceStyle: "automatic",
-    scheme: "flp", // ✅ 여기에 추가 (딥링킹용)
+    scheme: "flp", // 딥링킹용
 
     splash: {
-        image: "./assets/splash.png",
+        image: "./assets/adaptive-icon.png",
         resizeMode: "contain",
-        backgroundColor: "#22c55e",
+        backgroundColor: "#ffffff",
     },
     assetBundlePatterns: ["**/*"],
     ios: {
         supportsTablet: true,
-        bundleIdentifier: "com.teamInturrpt.flp", // ✅ iOS에서 필요한 경우
-        scheme: "flp", // ✅ 선택적 (딥링크 명시적으로)
+        bundleIdentifier: "com.teamInturrpt.flp",
+        config: {
+            googleMapsApiKey: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY,
+        },
     },
     android: {
         package: "com.teamInturrpt.flp",
@@ -29,16 +31,21 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
             backgroundColor: "#22c55e",
         },
         permissions: ["INTERNET", "ACCESS_NETWORK_STATE"],
-        scheme: "flp",
         config: {
             googleMaps: {
-                apiKey: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY, // ✅ 꼭 필요
+                apiKey: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY,
             },
         },
     },
 
     web: {
         favicon: "./assets/favicon.png",
+    },
+    notification: {
+        icon: "./assets/icon.png",
+        color: "#22c55e",
+        androidMode: "default",
+        androidCollapsedTitle: "FLP",
     },
     extra: {
         eas: {
@@ -57,6 +64,14 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
                     enableShrinkResourcesInReleaseBuilds: false,
                     usesCleartextTraffic: true,
                 },
+            },
+        ],
+        [
+            "expo-notifications",
+            {
+                icon: "./assets/icon.png",
+                color: "#22c55e",
+                defaultChannel: "default",
             },
         ],
     ],

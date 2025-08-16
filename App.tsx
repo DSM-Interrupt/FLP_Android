@@ -1,107 +1,112 @@
-import "react-native-url-polyfill/auto"
-import React, { useEffect, useState } from "react"
-import { NavigationContainer } from "@react-navigation/native"
-import { createStackNavigator } from "@react-navigation/stack"
+"use client"
+
+import { useEffect, useState } from "react"
+import { View, ActivityIndicator, Text, LogBox } from "react-native"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { ThemeProvider } from "./src/contexts/ThemeContext"
 import { AuthScreen } from "./src/screens/AuthScreen"
-import { MemberMainScreen } from "./src/screens/MemberMainScreen"
 import { HostMainScreen } from "./src/screens/HostMainScreen"
-import { LoadingScreen } from "./src/screens/LoadingScreen"
-import { authService } from "./src/services/auth"
-import { registerForPushNotificationsAsync } from "./src/utils/push"
+import { MemberMainScreen } from "./src/screens/MemberMainScreen"
+import { authService, type AutoLoginResult } from "./src/services/auth"
 
-const Stack = createStackNavigator()
-const queryClient = new QueryClient()
+// React Query 클라이언트 생성
+const queryClient = new QueryClient({
+    defaultOptions: {
+        queries: {
+            retry: 2,
+            staleTime: 5 * 60 * 1000, // 5분
+        },
+    },
+})
 
-export default function App() {
-    const [isLoading, setIsLoading] = useState(true)
+// 불필요한 경고 숨기기
+LogBox.ignoreLogs([
+    "Warning: componentWillReceiveProps",
+    "Warning: componentWillUpdate",
+    "Module RCTImageLoader",
+])
+
+function AppContent() {
+    const [checkingAuth, setCheckingAuth] = useState(true)
     const [isAuthenticated, setIsAuthenticated] = useState(false)
-    const [userType, setUserType] = useState<"member" | "host" | null>(null)
+    const [userType, setUserType] = useState<"host" | "member" | null>(null)
 
     useEffect(() => {
-        const tryAutoLogin = async () => {
+        const init = async () => {
             try {
-                const result = await authService.checkAutoLogin()
+                // Native 모듈 준비 시간 확보
+                await new Promise((resolve) => setTimeout(resolve, 200))
 
-                if (!result.success) {
-                    setIsAuthenticated(false)
-                    setUserType(null)
-                } else {
+                const result: AutoLoginResult = await authService
+                    .checkAutoLogin()
+                    .catch((err) => {
+                        console.error("자동 로그인 실패:", err)
+                        return { success: false } as AutoLoginResult
+                    })
+
+                if (result.success && result.userType) {
+                    setUserType(result.userType)
                     setIsAuthenticated(true)
-                    setUserType(result.userType ?? null)
-
-                    const token = await registerForPushNotificationsAsync()
-                    if (token) {
-                        console.log("푸시 토큰 저장 예정:", token)
-                    }
+                } else {
+                    setUserType(null)
+                    setIsAuthenticated(false)
                 }
-            } catch (error) {
-                console.error("자동 로그인 실패:", error)
-                setIsAuthenticated(false)
+            } catch (err) {
+                console.error("초기화 오류:", err)
                 setUserType(null)
+                setIsAuthenticated(false)
             } finally {
-                setIsLoading(false)
+                setCheckingAuth(false)
             }
         }
 
-        tryAutoLogin()
+        init()
     }, [])
 
-    useEffect(() => {
-        const unsubscribe = authService.onLogout(() => {
-            console.log("🔔 App.tsx: 로그아웃 감지됨")
-            setIsAuthenticated(false)
-            setUserType(null)
-        })
-
-        return unsubscribe
-    }, [])
-
-    const handleAuthSuccess = (newUserType: "member" | "host") => {
-        console.log("🎉 인증 성공:", newUserType)
+    const handleAuthSuccess = (type: "host" | "member") => {
+        setUserType(type)
         setIsAuthenticated(true)
-        setUserType(newUserType)
     }
 
-    if (isLoading) {
-        return <LoadingScreen />
+    const handleLogout = () => {
+        setUserType(null)
+        setIsAuthenticated(false)
     }
 
-    const AuthScreenWrapper = (props: any) => (
-        <AuthScreen {...props} onAuthSuccess={handleAuthSuccess} />
+    if (checkingAuth) {
+        return (
+            <View
+                style={{
+                    flex: 1,
+                    justifyContent: "center",
+                    alignItems: "center",
+                    backgroundColor: "#f9fafb",
+                }}
+            >
+                <ActivityIndicator size="large" color="#0ea5e9" />
+                <Text style={{ marginTop: 10, color: "#6b7280" }}>
+                    로그인 상태 확인 중...
+                </Text>
+            </View>
+        )
+    }
+
+    if (!isAuthenticated || !userType) {
+        return <AuthScreen onAuthSuccess={handleAuthSuccess} />
+    }
+
+    return userType === "host" ? (
+        <HostMainScreen onLogout={handleLogout} />
+    ) : (
+        <MemberMainScreen onLogout={handleLogout} />
     )
+}
 
+export default function App() {
     return (
         <QueryClientProvider client={queryClient}>
             <ThemeProvider>
-                <NavigationContainer>
-                    <Stack.Navigator
-                        screenOptions={{ headerShown: false }}
-                        key={
-                            isAuthenticated
-                                ? `authenticated-${userType}`
-                                : "unauthenticated"
-                        }
-                    >
-                        {!isAuthenticated ? (
-                            <Stack.Screen
-                                name="Auth"
-                                component={AuthScreenWrapper}
-                            />
-                        ) : userType === "member" ? (
-                            <Stack.Screen
-                                name="MemberMain"
-                                component={MemberMainScreen}
-                            />
-                        ) : (
-                            <Stack.Screen
-                                name="HostMain"
-                                component={HostMainScreen}
-                            />
-                        )}
-                    </Stack.Navigator>
-                </NavigationContainer>
+                <AppContent />
             </ThemeProvider>
         </QueryClientProvider>
     )
