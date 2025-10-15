@@ -14,16 +14,16 @@ export const colorTable = {
             900: "#14532d",
         },
         dark: {
-            50: "#f0fdf4",
-            100: "#dcfce7",
-            200: "#bbf7d0",
-            300: "#86efac",
-            400: "#4ade80",
-            500: "#22c55e",
-            600: "#16a34a",
-            700: "#15803d",
-            800: "#166534",
-            900: "#14532d",
+            50: "#14532d",
+            100: "#166534",
+            200: "#15803d",
+            300: "#16a34a",
+            400: "#22c55e",
+            500: "#4ade80",
+            600: "#86efac",
+            700: "#bbf7d0",
+            800: "#dcfce7",
+            900: "#f0fdf4",
         },
         system: {
             50: "#f0fdf4",
@@ -53,17 +53,17 @@ export const colorTable = {
             950: "#030712",
         },
         dark: {
-            50: "#f9fafb",
-            100: "#f3f4f6",
-            200: "#e5e7eb",
-            300: "#d1d5db",
-            400: "#9ca3af",
+            50: "#030712",
+            100: "#111827",
+            200: "#1f2937",
+            300: "#374151",
+            400: "#4b5563",
             500: "#6b7280",
-            600: "#4b5563",
-            700: "#374151",
-            800: "#1f2937",
-            900: "#111827",
-            950: "#030712",
+            600: "#9ca3af",
+            700: "#d1d5db",
+            800: "#e5e7eb",
+            900: "#f3f4f6",
+            950: "#f9fafb",
         },
         system: {
             50: "#f9fafb",
@@ -193,4 +193,25 @@ export const colorTable = {
             900: "#78350f",
         },
     },
+}
+
+export const getThemeColors = (isDark: boolean) => {
+    const mode = isDark ? "dark" : "light"
+    return {
+        background: isDark
+            ? colorTable.gray.dark[900]
+            : colorTable.gray.light[50],
+        surface: isDark
+            ? colorTable.gray.dark[800]
+            : colorTable.gray.light[100],
+        text: isDark ? colorTable.gray.dark[100] : colorTable.gray.light[900],
+        textSecondary: isDark
+            ? colorTable.gray.dark[400]
+            : colorTable.gray.light[600],
+        primary: colorTable.main[mode][500],
+        primaryLight: colorTable.main[mode][400],
+        primaryDark: colorTable.main[mode][600],
+        border: isDark ? colorTable.gray.dark[700] : colorTable.gray.light[300],
+        card: isDark ? colorTable.gray.dark[800] : colorTable.gray.light[50],
+    }
 }

@@ -1,13 +1,14 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { View, ActivityIndicator, Text, LogBox } from "react-native"
+import { View, ActivityIndicator, Text, LogBox, StatusBar } from "react-native"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { ThemeProvider } from "./src/contexts/ThemeContext"
+import { ThemeProvider, useTheme } from "./src/contexts/ThemeContext"
 import { AuthScreen } from "./src/screens/AuthScreen"
 import { HostMainScreen } from "./src/screens/HostMainScreen"
 import { MemberMainScreen } from "./src/screens/MemberMainScreen"
 import { authService, type AutoLoginResult } from "./src/services/auth"
+import { getThemeColors } from "./src/styles/colorTable"
 
 // React Query 클라이언트 생성
 const queryClient = new QueryClient({
@@ -27,6 +28,8 @@ LogBox.ignoreLogs([
 ])
 
 function AppContent() {
+    const { isDark } = useTheme()
+    const themeColors = getThemeColors(isDark)
     const [checkingAuth, setCheckingAuth] = useState(true)
     const [isAuthenticated, setIsAuthenticated] = useState(false)
     const [userType, setUserType] = useState<"host" | "member" | null>(null)
@@ -80,11 +83,17 @@ function AppContent() {
                     flex: 1,
                     justifyContent: "center",
                     alignItems: "center",
-                    backgroundColor: "#f9fafb",
+                    backgroundColor: themeColors.background,
                 }}
             >
-                <ActivityIndicator size="large" color="#0ea5e9" />
-                <Text style={{ marginTop: 10, color: "#6b7280" }}>
+                <StatusBar
+                    barStyle={isDark ? "light-content" : "dark-content"}
+                    backgroundColor={themeColors.background}
+                />
+                <ActivityIndicator size="large" color={themeColors.primary} />
+                <Text
+                    style={{ marginTop: 10, color: themeColors.textSecondary }}
+                >
                     로그인 상태 확인 중...
                 </Text>
             </View>

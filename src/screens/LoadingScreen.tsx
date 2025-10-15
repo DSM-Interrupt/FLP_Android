@@ -1,17 +1,21 @@
+"use client"
+
 import type React from "react"
 import { View, Text, ActivityIndicator, StyleSheet } from "react-native"
+import { useTheme } from "../contexts/ThemeContext"
 import { colorTable } from "../styles/colorTable"
 
 export const LoadingScreen: React.FC = () => {
-    const colors = colorTable.main.light
-    const grayColors = colorTable.gray.light
+    const { theme, isDark } = useTheme()
+    const colors = colorTable.main[theme]
+    const grayColors = colorTable.gray[theme]
 
     const styles = StyleSheet.create({
         container: {
             flex: 1,
             justifyContent: "center",
             alignItems: "center",
-            backgroundColor: grayColors[50],
+            backgroundColor: isDark ? grayColors[950] : grayColors[50],
         },
         title: {
             fontSize: 32,
@@ -21,7 +25,7 @@ export const LoadingScreen: React.FC = () => {
         },
         subtitle: {
             fontSize: 16,
-            color: grayColors[600],
+            color: isDark ? grayColors[400] : grayColors[600],
             marginBottom: 40,
         },
     })

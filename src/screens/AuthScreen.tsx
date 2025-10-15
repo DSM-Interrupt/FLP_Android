@@ -13,10 +13,11 @@ import {
     Platform,
     ScrollView,
     Dimensions,
+    StatusBar,
 } from "react-native"
 import { useMutation } from "@tanstack/react-query"
 import { useTheme } from "../contexts/ThemeContext"
-import { colorTable } from "../styles/colorTable"
+import { getThemeColors } from "../styles/colorTable"
 import { authService } from "../services/auth"
 
 const { width, height } = Dimensions.get("window")
@@ -26,12 +27,8 @@ interface AuthScreenProps {
 }
 
 export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthSuccess }) => {
-    const { theme, isDark, systemTheme } = useTheme()
-
-    const colors = colorTable.main[theme]
-    const grayColors = colorTable.gray[theme]
-    const dangerColors = colorTable.danger[theme]
-    const successColors = colorTable.success[theme]
+    const { isDark } = useTheme()
+    const themeColors = getThemeColors(isDark)
 
     const [userType, setUserType] = useState<"member" | "host">("member")
     const [isLogin, setIsLogin] = useState(true)
@@ -213,7 +210,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthSuccess }) => {
     const dynamicStyles = StyleSheet.create({
         container: {
             flex: 1,
-            backgroundColor: isDark ? grayColors[950] : grayColors[50],
+            backgroundColor: themeColors.background,
         },
         keyboardAvoidingView: {
             flex: 1,
@@ -230,18 +227,18 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthSuccess }) => {
         headerTitle: {
             fontSize: 32,
             fontWeight: "bold",
-            color: colors[500],
+            color: themeColors.primary,
         },
         systemThemeIndicator: {
             marginTop: 8,
             paddingHorizontal: 12,
             paddingVertical: 4,
-            backgroundColor: isDark ? grayColors[800] : grayColors[200],
+            backgroundColor: themeColors.surface,
             borderRadius: 12,
         },
         systemThemeText: {
             fontSize: 12,
-            color: isDark ? grayColors[400] : grayColors[600],
+            color: themeColors.textSecondary,
             textAlign: "center",
         },
         content: {
@@ -260,19 +257,19 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthSuccess }) => {
         appName: {
             fontSize: 32,
             fontWeight: "bold",
-            color: colors[500],
+            color: themeColors.primary,
             marginBottom: 8,
         },
         appDescription: {
             fontSize: 16,
-            color: isDark ? grayColors[400] : grayColors[600],
+            color: themeColors.textSecondary,
             textAlign: "center",
             lineHeight: 22,
         },
         userTypeContainer: {
             flexDirection: "row",
             marginBottom: 30,
-            backgroundColor: isDark ? grayColors[900] : grayColors[200],
+            backgroundColor: themeColors.surface,
             borderRadius: 12,
             padding: 4,
         },
@@ -283,8 +280,8 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthSuccess }) => {
             borderRadius: 8,
         },
         userTypeButtonActive: {
-            backgroundColor: colors[500],
-            shadowColor: colors[500],
+            backgroundColor: themeColors.primary,
+            shadowColor: themeColors.primary,
             shadowOffset: { width: 0, height: 2 },
             shadowOpacity: 0.3,
             shadowRadius: 4,
@@ -301,7 +298,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthSuccess }) => {
             color: "white",
         },
         userTypeTextInactive: {
-            color: isDark ? grayColors[400] : grayColors[600],
+            color: themeColors.textSecondary,
         },
         formContainer: {
             marginBottom: 30,
@@ -312,41 +309,41 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthSuccess }) => {
         inputLabel: {
             fontSize: 16,
             fontWeight: "600",
-            color: isDark ? grayColors[200] : grayColors[700],
+            color: themeColors.text,
             marginBottom: 8,
         },
         input: {
             borderWidth: 2,
-            borderColor: isDark ? grayColors[800] : grayColors[300],
+            borderColor: themeColors.border,
             borderRadius: 12,
             paddingHorizontal: 16,
             paddingVertical: 14,
             fontSize: 16,
-            backgroundColor: isDark ? grayColors[900] : "white",
-            color: isDark ? grayColors[100] : grayColors[900],
+            backgroundColor: themeColors.card,
+            color: themeColors.text,
         },
         errorText: {
             fontSize: 14,
-            color: dangerColors[600],
+            color: "#ef4444",
             textAlign: "center",
             marginBottom: 16,
             paddingHorizontal: 16,
             lineHeight: 20,
         },
         submitButton: {
-            backgroundColor: colors[500],
+            backgroundColor: themeColors.primary,
             borderRadius: 12,
             paddingVertical: 16,
             alignItems: "center",
             marginBottom: 20,
-            shadowColor: colors[500],
+            shadowColor: themeColors.primary,
             shadowOffset: { width: 0, height: 4 },
             shadowOpacity: 0.3,
             shadowRadius: 8,
             elevation: 5,
         },
         submitButtonDisabled: {
-            backgroundColor: isDark ? grayColors[800] : grayColors[400],
+            backgroundColor: themeColors.border,
             shadowOpacity: 0,
             elevation: 0,
         },
@@ -363,34 +360,34 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthSuccess }) => {
         },
         switchText: {
             fontSize: 16,
-            color: isDark ? grayColors[400] : grayColors[600],
+            color: themeColors.textSecondary,
         },
         switchButton: {
             marginLeft: 8,
         },
         switchButtonText: {
             fontSize: 16,
-            color: colors[500],
+            color: themeColors.primary,
             fontWeight: "600",
             textDecorationLine: "underline",
         },
         userTypeDescription: {
-            backgroundColor: isDark ? grayColors[900] : grayColors[100],
+            backgroundColor: themeColors.surface,
             borderRadius: 12,
             padding: 16,
             marginBottom: 20,
             borderLeftWidth: 4,
-            borderLeftColor: colors[500],
+            borderLeftColor: themeColors.primary,
         },
         descriptionTitle: {
             fontSize: 16,
             fontWeight: "600",
-            color: isDark ? grayColors[100] : grayColors[800],
+            color: themeColors.text,
             marginBottom: 8,
         },
         descriptionText: {
             fontSize: 14,
-            color: isDark ? grayColors[300] : grayColors[600],
+            color: themeColors.textSecondary,
             lineHeight: 20,
         },
         footer: {
@@ -400,7 +397,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthSuccess }) => {
         },
         footerText: {
             fontSize: 12,
-            color: isDark ? grayColors[500] : grayColors[500],
+            color: themeColors.textSecondary,
             textAlign: "center",
             lineHeight: 18,
         },
@@ -410,6 +407,10 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthSuccess }) => {
 
     return (
         <View style={dynamicStyles.container}>
+            <StatusBar
+                barStyle={isDark ? "light-content" : "dark-content"}
+                backgroundColor={themeColors.background}
+            />
             <KeyboardAvoidingView
                 style={dynamicStyles.keyboardAvoidingView}
                 behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -490,9 +491,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthSuccess }) => {
                                         }
                                         placeholder="기기 고유 ID를 입력하세요"
                                         placeholderTextColor={
-                                            isDark
-                                                ? grayColors[600]
-                                                : grayColors[400]
+                                            themeColors.textSecondary
                                         }
                                         autoCapitalize="none"
                                         autoCorrect={false}
@@ -520,9 +519,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthSuccess }) => {
                                         userType === "host" ? "호스트" : "멤버"
                                     } ID를 입력하세요`}
                                     placeholderTextColor={
-                                        isDark
-                                            ? grayColors[600]
-                                            : grayColors[400]
+                                        themeColors.textSecondary
                                     }
                                     autoCapitalize="none"
                                     autoCorrect={false}
@@ -545,9 +542,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthSuccess }) => {
                                     }
                                     placeholder="비밀번호를 입력하세요"
                                     placeholderTextColor={
-                                        isDark
-                                            ? grayColors[600]
-                                            : grayColors[400]
+                                        themeColors.textSecondary
                                     }
                                     secureTextEntry
                                     autoCapitalize="none"
