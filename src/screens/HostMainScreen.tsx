@@ -19,9 +19,9 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useTheme } from "../contexts/ThemeContext"
 import { colorTable } from "../styles/colorTable"
 import api from "../services/api"
-import { socketService } from "../services/socket"
+import { socketService } from "../services/socket" // socketService 사용
+// import { io } from "socket.io-client" // 🔥 io 직접 호출 제거
 import { authService } from "../services/auth"
-import { io } from "socket.io-client"
 import Ionicons from "@expo/vector-icons/Ionicons"
 import { sendLocalPushNotification } from "../utils/push"
 
@@ -220,12 +220,9 @@ export const HostMainScreen: React.FC<HostMainScreenProps> = ({ onLogout }) => {
             if (timeoutRef.current) {
                 clearTimeout(timeoutRef.current)
             }
-            if (socketRef.current) {
-                socketRef.current.disconnect()
-                socketRef.current = null
-            }
-            socketService.removeAllListeners()
+            // 🔥 수정: socketService를 사용하도록 변경
             socketService.disconnect()
+            socketRef.current = null
         }
     }, [ready])
 
@@ -249,6 +246,64 @@ export const HostMainScreen: React.FC<HostMainScreenProps> = ({ onLogout }) => {
         )
     }
 
+    const handleLocationData = (data: any) => {
+        const dataTimeoutRef = { current: timeoutRef.current }
+
+        if (dataTimeoutRef.current) {
+            clearTimeout(dataTimeoutRef.current)
+            dataTimeoutRef.current = null
+            timeoutRef.current = null
+        }
+
+        const dangerMembers: string[] = []
+
+        data.members?.forEach((member: any) => {
+            const name = member.memberName || "Unknown"
+            const currentDanger = member.danger || 0
+            const prevDanger = previousDangerStatesRef.current[name] ?? 0
+
+            if (currentDanger === 3 && prevDanger !== 3) {
+                dangerMembers.push(name)
+            }
+
+            previousDangerStatesRef.current[name] = currentDanger
+        })
+
+        dangerMembers.forEach((name) => {
+            sendLocalPushNotification("이탈 감지", `${name}님이 이탈했습니다.`)
+        })
+
+        try {
+            const hostLocationData: HostLocationData = {
+                host: {
+                    lat: data.host?.lat || 0,
+                    lon: data.host?.lon || 0,
+                },
+                distanceInfo: {
+                    safe: data.distanceInfo?.safe || 100,
+                    warning: data.distanceInfo?.warning || 200,
+                    danger: data.distanceInfo?.danger || 300,
+                },
+                members:
+                    data.members?.map((member: any) => ({
+                        memberName: member.memberName || "Unknown",
+                        lat: member.lat || 0,
+                        lon: member.lon || 0,
+                        distance: member.distance || 0,
+                        danger: member.danger || 0,
+                    })) || [],
+            }
+
+            setLocationData(hostLocationData)
+            setError(null)
+            setIsLoading(false)
+        } catch (transformError) {
+            console.error("❌ 호스트 데이터 변환 실패:", transformError)
+            setError("위치 데이터 변환에 실패했습니다.")
+            setIsLoading(false)
+        }
+    }
+
     const connectSocket = async () => {
         if (timeoutRef.current) {
             clearTimeout(timeoutRef.current)
@@ -268,64 +323,41 @@ export const HostMainScreen: React.FC<HostMainScreenProps> = ({ onLogout }) => {
 
             console.log("✅ 토큰 확인됨, 호스트 소켓 연결 중...")
 
-            const dataTimeoutRef = { current: null as NodeJS.Timeout | null }
+            setIsLoading(true)
+            setError(null)
 
-            timeoutRef.current = setTimeout(() => {
-                console.log("⏰ 소켓 연결 타임아웃")
-                setIsLoading(false)
-                setError(
-                    "서버 연결 시간이 초과되었습니다. 네트워크를 확인해주세요."
-                )
-                timeoutRef.current = null
-            }, 8000)
-
-            if (socketRef.current) {
-                socketRef.current.disconnect()
-                socketRef.current = null
-            }
-
-            const socket = io("wss://flp24.com/host/location", {
-                query: { Authorization: `Bearer ${token}` },
-                forceNew: true,
-            })
-
+            // 🔥 수정: socketService를 사용하고, 연결이 완료될 때까지 기다립니다.
+            const socket = await socketService.connectAsHost()
             socketRef.current = socket
 
-            await new Promise((resolve, reject) => {
-                socket.on("connect", () => {
-                    console.log("✅ 소켓 연결됨")
-                    if (timeoutRef.current) {
-                        clearTimeout(timeoutRef.current)
-                        timeoutRef.current = null
-                    }
+            // 데이터 수신 타임아웃 설정
+            timeoutRef.current = setTimeout(() => {
+                console.log(
+                    "⏰ 데이터 수신 타임아웃 - 서버에서 위치 데이터를 받지 못했습니다"
+                )
+                setIsLoading(false)
+                setError(
+                    "위치 데이터를 받지 못했습니다. 새로고침을 시도해주세요."
+                )
+                timeoutRef.current = null
+            }, 10000)
 
-                    dataTimeoutRef.current = setTimeout(() => {
-                        console.log(
-                            "⏰ 데이터 수신 타임아웃 - 서버에서 위치 데이터를 받지 못했습니다"
-                        )
-                        setIsLoading(false)
-                        setError(
-                            "위치 데이터를 받지 못했습니다. 새로고침을 시도해주세요."
-                        )
-                    }, 10000)
+            // 🔥 수정: 소켓 연결 후 바로 서버에 초기 데이터 요청을 보냅니다. (느린 로딩 방지)
+            console.log("📤 서버에 초기 데이터 요청 중...")
+            socket.emit("requestData")
 
-                    resolve(socket)
-                })
-
-                socket.on("connect_error", (error) => {
-                    console.error("❌ 소켓 연결 실패:", error)
-                    if (timeoutRef.current) {
-                        clearTimeout(timeoutRef.current)
-                        timeoutRef.current = null
-                    }
-                    reject(error)
-                })
+            // 🔥 수정: 재연결 시에도 데이터를 요청하도록 connect 리스너 등록
+            socket.on("connect", () => {
+                console.log(
+                    "✅ 소켓 connected 이벤트 호출됨. 서버에 초기 데이터 요청 중..."
+                )
+                socket.emit("requestData")
             })
 
-            socket.on("connect", () => {
-                console.log("✅ 소켓 connected 이벤트 호출됨")
-                console.log("📤 서버에 초기 데이터 요청 중...")
-                socket.emit("requestData")
+            // 🔥 수정: 데이터 리스너 등록
+            socket.on("info", (data: any) => {
+                console.log("📍 호스트 위치 데이터 수신 (info):", data)
+                handleLocationData(data)
             })
 
             setSocketConnected(true)
@@ -333,67 +365,7 @@ export const HostMainScreen: React.FC<HostMainScreenProps> = ({ onLogout }) => {
             setError(null)
             console.log("✅ 호스트 소켓 연결 성공")
 
-            socket.on("info", (data: any) => {
-                console.log("📍 호스트 위치 데이터 수신 (info):", data)
-
-                if (dataTimeoutRef.current) {
-                    clearTimeout(dataTimeoutRef.current)
-                    dataTimeoutRef.current = null
-                }
-
-                const dangerMembers: string[] = []
-
-                data.members?.forEach((member: any) => {
-                    const name = member.memberName || "Unknown"
-                    const currentDanger = member.danger || 0
-                    const prevDanger =
-                        previousDangerStatesRef.current[name] ?? 0
-
-                    if (currentDanger === 3 && prevDanger !== 3) {
-                        dangerMembers.push(name)
-                    }
-
-                    previousDangerStatesRef.current[name] = currentDanger
-                })
-
-                dangerMembers.forEach((name) => {
-                    sendLocalPushNotification(
-                        "이탈 감지",
-                        `${name}님이 이탈했습니다.`
-                    )
-                })
-
-                try {
-                    const hostLocationData: HostLocationData = {
-                        host: {
-                            lat: data.host?.lat || 0,
-                            lon: data.host?.lon || 0,
-                        },
-                        distanceInfo: {
-                            safe: data.distanceInfo?.safe || 100,
-                            warning: data.distanceInfo?.warning || 200,
-                            danger: data.distanceInfo?.danger || 300,
-                        },
-                        members:
-                            data.members?.map((member: any) => ({
-                                memberName: member.memberName || "Unknown",
-                                lat: member.lat || 0,
-                                lon: member.lon || 0,
-                                distance: member.distance || 0,
-                                danger: member.danger || 0,
-                            })) || [],
-                    }
-
-                    setLocationData(hostLocationData)
-                    setError(null)
-                    setIsLoading(false)
-                } catch (transformError) {
-                    console.error("❌ 호스트 데이터 변환 실패:", transformError)
-                    setError("위치 데이터 변환에 실패했습니다.")
-                    setIsLoading(false)
-                }
-            })
-
+            // 🔥 수정: socketService의 connection monitoring/error listener를 사용
             socketService.startConnectionMonitoring((connected: boolean) => {
                 console.log("🔄 호스트 소켓 연결 상태 변경:", connected)
                 setSocketConnected(connected)
@@ -401,7 +373,9 @@ export const HostMainScreen: React.FC<HostMainScreenProps> = ({ onLogout }) => {
                     console.log("❌ 호스트 소켓 연결 끊김, 재연결 시도 중...")
                     setError("서버 연결이 끊어졌습니다.")
                     setTimeout(() => {
-                        connectSocket()
+                        // socketService.disconnect()
+                        // connectSocket()
+                        // 재연결은 socket.io 내부 로직에 의존
                     }, 3000)
                 } else {
                     console.log("✅ 호스트 소켓 재연결 성공")
@@ -437,10 +411,8 @@ export const HostMainScreen: React.FC<HostMainScreenProps> = ({ onLogout }) => {
     const handleRefresh = () => {
         console.log("🔄 호스트 수동 새로고침 실행")
 
-        if (socketRef.current) {
-            socketRef.current.disconnect()
-            socketRef.current = null
-        }
+        // 기존 연결 해제
+        socketService.disconnect()
 
         setSocketConnected(false)
         setIsLoading(true)
